@@ -30,7 +30,8 @@ const defaultBook = {
   finishedAt: '',
   provenance: '',
   reading: '',
-  ownership: ''
+  ownership: '',
+  coverUrl: ''
 };
 
 export default function BookForm() {
@@ -53,6 +54,23 @@ export default function BookForm() {
       });
     }
   }, [id]);
+
+  const handleFetchCover = async () => {
+    if (!formData.title) return alert('Please enter a title first.');
+    try {
+      const q = 'intitle:${formData.title}${formData.author ? '+inauthor:'+formData.author : ''}';
+      const res = await fetch('https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=1');
+      const data = await res.json();
+      const url = data.items?.[0]?.volumeInfo?.imageLinks?.thumbnail;
+      if (url) {
+        setFormData(prev => ({ ...prev, coverUrl: url.replace('http:', 'https:') }));
+      } else {
+        alert('No cover found on Google Books.');
+      }
+    } catch (e) {
+      alert('Error fetching cover.');
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -92,7 +110,7 @@ export default function BookForm() {
         <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '20px', marginTop: '20px' }}>
           <div className="panel" style={{ display: 'grid', gap: '15px' }}>
             <div className="searchBar" style={{ margin: 0 }}>
-              <label style={{display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)'}}>Title</label>
+              <div style={{display:"flex", justifyContent:"space-between"}}><label style={{display: "block", marginBottom: "4px", fontSize: "12px", color: "var(--muted)"}}>Title</label><button type="button" onClick={handleFetchCover} style={{fontSize:"10px", padding:"2px 6px", borderRadius:"4px", background:"#efe4d0", border:"1px solid #d8c6ad", cursor:"pointer", color:"#6d5d48"}}>Fetch Cover API</button></div>
               <input name="title" value={formData.title} onChange={handleChange} required />
             </div>
             
@@ -137,6 +155,11 @@ export default function BookForm() {
             </div>
 
             <div className="searchBar" style={{ margin: 0 }}>
+              <label style={{display: "block", marginBottom: "4px", fontSize: "12px", color: "var(--muted)"}}>Cover Image URL (optional)</label>
+              <input name="coverUrl" value={formData.coverUrl || ""} onChange={handleChange} placeholder="https://..." />
+            </div>
+
+            <div className="searchBar" style={{ margin: 0 }}>
               <label style={{display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)'}}>Cataloged Date</label>
               <input name="cataloged" value={formData.cataloged} onChange={handleChange} />
             </div>
@@ -177,3 +200,4 @@ export default function BookForm() {
     </Shell>
   );
 }
+
