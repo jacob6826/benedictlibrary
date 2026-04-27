@@ -31,7 +31,8 @@ const defaultBook = {
   provenance: '',
   reading: '',
   ownership: '',
-  coverUrl: ''
+  coverUrl: '',
+  isbn: ''
 };
 
 export default function BookForm() {
@@ -56,16 +57,46 @@ export default function BookForm() {
   }, [id]);
 
   const handleFetchCover = async () => {
-    if (!formData.title) return alert('Please enter a title first.');
+    if (!formData.title && !formData.isbn) return alert('Please enter a title or ISBN first.');
     try {
-      const q = `intitle:${formData.title}${formData.author ? '+inauthor:'+formData.author : ''}`;
-      const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=1`);
-      const data = await res.json();
-      const url = data.items?.[0]?.volumeInfo?.imageLinks?.thumbnail;
+      let url = null;
+
+      // 1. If ISBN is provided, try OpenLibrary directly for the highest quality cover
+      if (formData.isbn) {
+        const cleanIsbn = formData.isbn.replace(/-/g, '').trim();
+        const olRes = await fetch(`https://openlibrary.org/search.json?isbn=${cleanIsbn}`);
+        const olData = await olRes.json();
+        const coverId = olData.docs?.[0]?.cover_i;
+        if (coverId) url = `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`;
+        
+        // Try Google Books by ISBN if OL fails
+        if (!url) {
+          const gbRes = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${cleanIsbn}&maxResults=1`);
+          const gbData = await gbRes.json();
+          url = gbData.items?.[0]?.volumeInfo?.imageLinks?.thumbnail;
+        }
+      }
+
+      // 2. Try Google Books with a relaxed text search (much better hit rate than intitle:)
+      if (!url && formData.title) {
+        const q = `${formData.title} ${formData.author || ''}`.trim();
+        const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=1`);
+        const data = await res.json();
+        url = data.items?.[0]?.volumeInfo?.imageLinks?.thumbnail;
+      }
+
+      // 3. Try OpenLibrary text search as a final fallback
+      if (!url && formData.title) {
+        const olRes = await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(formData.title)}${formData.author ? '&author='+encodeURIComponent(formData.author) : ''}&limit=1`);
+        const olData = await olRes.json();
+        const coverId = olData.docs?.[0]?.cover_i;
+        if (coverId) url = `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`;
+      }
+
       if (url) {
         setFormData(prev => ({ ...prev, coverUrl: url.replace('http:', 'https:') }));
       } else {
-        alert('No cover found on Google Books.');
+        alert('No cover found on Google Books or OpenLibrary. You may need to paste an image URL manually.');
       }
     } catch (e) {
       alert('Error fetching cover.');
@@ -117,6 +148,11 @@ export default function BookForm() {
             <div className="searchBar" style={{ margin: 0 }}>
               <label style={{display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)'}}>Author</label>
               <input name="author" value={formData.author} onChange={handleChange} required />
+            </div>
+
+            <div className="searchBar" style={{ margin: 0 }}>
+              <label style={{display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)'}}>ISBN (Optional - highly recommended for accurate covers)</label>
+              <input name="isbn" value={formData.isbn || ''} onChange={handleChange} placeholder="e.g. 9780143127550" />
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
