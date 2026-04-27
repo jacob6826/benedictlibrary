@@ -26,6 +26,8 @@ const defaultBook = {
   location: '',
   tags: '',
   cataloged: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+  startedAt: '',
+  finishedAt: '',
   provenance: '',
   reading: '',
   ownership: ''
@@ -136,6 +138,17 @@ export default function BookForm() {
             <div className="searchBar" style={{ margin: 0 }}>
               <label style={{display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)'}}>Cataloged Date</label>
               <input name="cataloged" value={formData.cataloged} onChange={handleChange} />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+              <div className="searchBar" style={{ margin: 0 }}>
+                <label style={{display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)'}}>Date Started</label>
+                <input type="date" name="startedAt" value={formData.startedAt || ''} onChange={handleChange} style={{ width: '100%', border: '1px solid var(--line)', background: '#fffaf6', borderRadius: '999px', padding: '12px 16px', font: 'inherit', color: 'var(--ink)' }} />
+              </div>
+              <div className="searchBar" style={{ margin: 0 }}>
+                <label style={{display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)'}}>Date Finished</label>
+                <input type="date" name="finishedAt" value={formData.finishedAt || ''} onChange={handleChange} style={{ width: '100%', border: '1px solid var(--line)', background: '#fffaf6', borderRadius: '999px', padding: '12px 16px', font: 'inherit', color: 'var(--ink)' }} />
+              </div>
             </div>
           </div>
 
