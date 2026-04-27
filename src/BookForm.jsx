@@ -58,8 +58,8 @@ export default function BookForm() {
   const handleFetchCover = async () => {
     if (!formData.title) return alert('Please enter a title first.');
     try {
-      const q = 'intitle:${formData.title}${formData.author ? '+inauthor:'+formData.author : ''}';
-      const res = await fetch('https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=1');
+      const q = `intitle:${formData.title}${formData.author ? '+inauthor:'+formData.author : ''}`;
+      const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=1`);
       const data = await res.json();
       const url = data.items?.[0]?.volumeInfo?.imageLinks?.thumbnail;
       if (url) {
