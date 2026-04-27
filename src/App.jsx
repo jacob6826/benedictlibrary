@@ -1,39 +1,65 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route, Link, useParams } from 'react-router-dom'
 import './styles.css'
-import { recent, queue, stacks, archives, departures, allBooks, detailData } from './data'
-import { auth } from './firebase'
+import { auth, db } from './firebase'
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth'
+import { collection, onSnapshot, query } from 'firebase/firestore'
+import BookForm from './BookForm'
+
+const BookContext = React.createContext({ stacks:[], archives:[], departures:[], queue:[], recent:[], allBooks:[] });
+function useLibrary() { return React.useContext(BookContext); }
 
 function BookCover({ label, small, muted }) { return <div className={`bookCover ${small ? 'small' : ''} ${muted ? 'mutedCover' : ''}`}>{label}</div> }
 function Header() { 
   const handleLogout = () => { if (auth.currentUser) signOut(auth); };
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <div className="titleRow"><span className="ornament" /><h1>Benedict Library</h1><span className="ornament" /></div>
-      {auth.currentUser && <button onClick={handleLogout} className="backLink" style={{ cursor: 'pointer', fontSize: '10px', padding: '4px 10px', marginTop: '-10px', marginBottom: '16px', background: 'transparent', color: 'var(--muted)', border: '1px solid var(--line)' }}>Log Out</button>}
+      <div className="titleRow">
+        <span className="ornament" /><h1>Benedict Library</h1><span className="ornament" />
+      </div>
+      {auth.currentUser && (
+        <div style={{ display: 'flex', gap: '10px', marginTop: '-10px', marginBottom: '16px' }}>
+          <Link to="/add-book" className="backLink" style={{ cursor: 'pointer', fontSize: '10px', padding: '4px 10px', background: 'var(--blue)', color: '#fff', border: 'none' }}>+ Add Book</Link>
+          <button onClick={handleLogout} className="backLink" style={{ cursor: 'pointer', fontSize: '10px', padding: '4px 10px', background: 'transparent', color: 'var(--muted)', border: '1px solid var(--line)' }}>Log Out</button>
+        </div>
+      )}
     </div>
   ); 
 }
 function Shell({ children }) { return <div className="page"><Header />{children}</div> }
 
-function Home() { return (<Shell>
-  <section className="panel hero"><div className="heroText"><div className="kicker">On the Desk.</div><h2>Nothing currently on the desk</h2><p>No active reading progress logged.</p></div></section>
+function Home() { 
+  const { stacks, archives, departures, queue, recent, allBooks } = useLibrary();
+  const currentlyReading = allBooks.find(b => b.status === 'Currently Reading');
+  
+  return (<Shell>
+  <section className="panel hero"><div className="heroText"><div className="kicker">On the Desk.</div><h2>{currentlyReading ? currentlyReading.title : 'Nothing currently on the desk'}</h2><p>{currentlyReading ? currentlyReading.reading : 'No active reading progress logged.'}</p></div>{currentlyReading && <Link to={`/book/${encodeURIComponent(currentlyReading.title)}`} className="primaryBtn" style={{textAlign:'center'}}>View Log</Link>}</section>
   <section className="plaqueGrid"><Link to="/stacks" className="plaque linkCard"><h3>The Stacks.</h3><div className="count">{stacks.length} Physical Volumes</div><p>Active physical holdings, on shelves or on loan.</p></Link><Link to="/archives" className="plaque linkCard"><h3>The Archives.</h3><div className="count">{archives.length} Digital Volumes</div><p>Cataloged ebooks and audiobooks.</p></Link></section>
-  <section className="middleGrid"><Link to="/circulation" className="panel linkCard"><h3>The Circulation Desk</h3>{stacks.filter(b => b.tags.includes('On Loan')).length === 0 ? <p className="pageSubtitle">No books currently on loan.</p> : stacks.filter(b => b.tags.includes('On Loan')).map(b => <div key={b.title} className="bookCard"><BookCover label="On Loan" small /><div><h4>{b.title}</h4><p>{b.author}</p><div className="tags"><span>On Loan</span></div></div></div>)}</Link><Link to="/reading-ledger" className="panel linkCard"><h3>Recently Cataloged</h3>{recent.length === 0 && <p className="pageSubtitle">No recently cataloged books.</p>}<div className="coverRow">{recent.map((title) => <div key={title} className="mini"><BookCover label={title} small /><div className="caption">New</div></div>)}</div><h3 className="queueTitle">The Queue</h3>{queue.length === 0 && <p className="pageSubtitle">Your queue is empty.</p>}<div className="coverRow">{queue.map((title, i) => <div key={i} className="mini"><BookCover label={title} small /></div>)}</div></Link></section>
-  <section className="bottomGrid"><Link to="/departures" className="panel linkCard"><h3>The Ledger of Departures</h3>{departures.length === 0 && <p className="pageSubtitle">No departed books.</p>}{departures.map(d => <div key={d.title} className="bookCard"><BookCover label={d.tag} small muted /><div><h4>{d.title}</h4><p>{d.status}</p><div className="tags"><span>{d.tag}</span><span>Archived</span></div></div></div>)}</Link><Link to="/reading-ledger" className="panel linkCard timeline"><h3>The Annals</h3><p className="pageSubtitle">No reading history.</p></Link></section>
+  <section className="middleGrid"><Link to="/circulation" className="panel linkCard"><h3>The Circulation Desk</h3>{stacks.filter(b => b.status === 'On Loan').length === 0 ? <p className="pageSubtitle">No books currently on loan.</p> : stacks.filter(b => b.status === 'On Loan').map(b => <div key={b.title} className="bookCard"><BookCover label="On Loan" small /><div><h4>{b.title}</h4><p>{b.author}</p><div className="tags"><span>On Loan</span></div></div></div>)}</Link><Link to="/reading-ledger" className="panel linkCard"><h3>Recently Cataloged</h3>{recent.length === 0 && <p className="pageSubtitle">No recently cataloged books.</p>}<div className="coverRow">{recent.map((b) => <div key={b.id} className="mini"><BookCover label={b.title} small /><div className="caption">New</div></div>)}</div><h3 className="queueTitle">The Queue</h3>{queue.length === 0 && <p className="pageSubtitle">Your queue is empty.</p>}<div className="coverRow">{queue.map((b) => <div key={b.id} className="mini"><BookCover label={b.title} small /></div>)}</div></Link></section>
+  <section className="bottomGrid"><Link to="/departures" className="panel linkCard"><h3>The Ledger of Departures</h3>{departures.length === 0 && <p className="pageSubtitle">No departed books.</p>}{departures.map(d => <div key={d.title} className="bookCard"><BookCover label={d.status} small muted /><div><h4>{d.title}</h4><p>{d.status}</p><div className="tags"><span>Archived</span></div></div></div>)}</Link><Link to="/reading-ledger" className="panel linkCard timeline"><h3>The Annals</h3><p className="pageSubtitle">No reading history.</p></Link></section>
   <footer className="footerLinks"><Link to="/circulation">Circulation List</Link><Link to="/catalog">Detailed Catalog</Link><Link to="/departures">Past Departures</Link></footer>
 </Shell>) }
 
-function BookCard({ item }) { return <Link to={`/book/${encodeURIComponent(item.title)}`} className="detailCard"><div className="detailCover"><BookCover label={item.title} small /></div><div className="detailMeta"><h4>{item.title}</h4><div className="author">{item.author}</div><div className="tags">{item.tags.map(t => <span key={t}>{t}</span>)}</div></div></Link> }
-function InventoryPage({ title, subtitle, items, hero }) { const [query, setQuery] = React.useState(''); const filtered = items.filter(i => `${i.title} ${i.author} ${i.tags.join(' ')}`.toLowerCase().includes(query.toLowerCase())); return <Shell><div className="pageView"><Link className="backLink" to="/">← Back</Link><h2 className="pageTitle">{title}</h2><p className="pageSubtitle">{subtitle}</p>{hero}<div className="searchBar"><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search titles, authors, tags..." /></div><div className="detailList">{filtered.map(item => <BookCard key={item.title} item={item} />)}</div></div></Shell> }
-function StacksPage() { return <InventoryPage title="The Stacks" subtitle="Physical holdings with locations, tags, and ownership details." items={stacks} hero={<div className="inventoryHero"><div className="inventoryStat"><div className="statLabel">Physical Volumes</div><div className="statValue">{stacks.length}</div></div><div className="inventoryStat"><div className="statLabel">On Loan</div><div className="statValue">{stacks.filter(b=>b.tags.includes('On Loan')).length}</div></div><div className="inventoryStat"><div className="statLabel">Signed</div><div className="statValue">{stacks.filter(b=>b.tags.includes('Signed')).length}</div></div></div>} /> }
-function ArchivesPage() { return <InventoryPage title="The Archives" subtitle="Digital holdings and future local-file support." items={archives} hero={<div className="inventoryHero"><div className="inventoryStat"><div className="statLabel">Digital Volumes</div><div className="statValue">{archives.length}</div></div><div className="inventoryStat"><div className="statLabel">Audiobooks</div><div className="statValue">{archives.filter(b=>b.tags.includes('Audiobook')).length}</div></div><div className="inventoryStat"><div className="statLabel">Local Files</div><div className="statValue">0</div></div></div>} /> }
-function CirculationPage() { const loaned = stacks.filter(b=>b.tags.includes('On Loan')); return <InventoryPage title="The Circulation Desk" subtitle="Books currently out on loan and active circulation status." items={loaned} hero={<div className="inventoryHero"><div className="inventoryStat"><div className="statLabel">Out on Loan</div><div className="statValue">{loaned.length}</div></div><div className="inventoryStat"><div className="statLabel">Due This Week</div><div className="statValue">0</div></div><div className="inventoryStat"><div className="statLabel">Borrowers</div><div className="statValue">0</div></div></div>} /> }
-function ReadingLedgerPage() { const [active, setActive] = React.useState(null); return <Shell><div className="pageView"><Link className="backLink" to="/">← Back</Link><h2 className="pageTitle">The Reading Ledger</h2><p className="pageSubtitle">Queue, currently reading, and completed reading annals.</p><div className="ledgerGrid"><section className="ledgerPanel"><div className="panelTop"><h3>The Queue</h3><div className="panelPill">{queue.length} books</div></div>{queue.length === 0 && <p className="pageSubtitle">Queue is empty.</p>}<div className="coverRow wrap largeQueue">{queue.map((q, i) => <button key={i} className={`queueThumb ${active === q ? 'active' : ''}`} onClick={() => setActive(q)}><BookCover label={q} small /></button>)}</div><div className="ledgerStats"><div><span>Queue</span><strong>{queue.length}</strong></div><div><span>Reading</span><strong>0</strong></div><div><span>Completed</span><strong>0</strong></div></div></section><section className="ledgerPanel deskPanel"><div className="panelTop"><h3>On the Desk</h3><div className="panelPill">Current read</div></div>{active ? <div className="deskBlock"><BookCover label={active} /><div><div className="kicker">Currently Reading</div><h4>{active}</h4><p>{detailData[active]?.reading || 'Private notes, quotes, and progress.'}</p><textarea placeholder="Write a note..." defaultValue={detailData[active]?.provenance || ''} /></div></div> : <p className="pageSubtitle">No active reading selected.</p>}</section><section className="ledgerPanel annalsPanel"><div className="panelTop"><h3>The Annals</h3><div className="panelPill">Yearly timeline</div></div><div className="timelineBlock"><p className="pageSubtitle">No history available.</p></div></section></div></div></Shell> }
-function DeparturesPage() { return <Shell><div className="pageView"><Link className="backLink" to="/">← Back</Link><h2 className="pageTitle">The Ledger of Departures</h2><p className="pageSubtitle">Books that left the collection permanently.</p><div className="departuresGrid">{departures.map(d => <div key={d.title} className="departureCard"><BookCover label={d.tag} small muted /><div><h4>{d.title}</h4><p>{d.status}</p><div className="tags"><span>{d.tag}</span><span>Stamped</span></div></div></div>)}</div></div></Shell> }
-function CatalogPage() { return <Shell><div className="pageView"><Link className="backLink" to="/">← Back</Link><h2 className="pageTitle">Detailed Catalog</h2><p className="pageSubtitle">A complete inventory view of the collection.</p><div className="searchBar"><input placeholder="Search the full catalog..." /></div><div className="detailList">{allBooks.map(item => <BookCard key={item.title} item={item} />)}</div></div></Shell> }
-function BookPage() { const { title } = useParams(); const decoded = decodeURIComponent(title || ''); const item = detailData[decoded] || { author: 'Unknown Author', status: 'Inventory Item', location: 'Unassigned', cataloged: 'Unknown', provenance: 'No notes yet.', reading: 'No reading log available.', ownership: 'Ownership details pending.' }; return <Shell><div className="pageView"><Link className="backLink" to="/">← Back</Link><div className="bookHero"><BookCover label={decoded || 'Book'} /><div className="bookHeroText"><h2 className="pageTitle">{decoded}</h2><div className="author bookHeroAuthor">{item.author}</div><div className="tags"><span>{item.status}</span><span>{item.location}</span></div><div className="bookMetaGrid"><div><span>Status</span><strong>{item.status}</strong></div><div><span>Location</span><strong>{item.location}</strong></div><div><span>Cataloged</span><strong>{item.cataloged}</strong></div></div></div></div><div className="bookDetailSections"><section className="bookDetailSection"><h3>Provenance</h3><p>{item.provenance}</p></section><section className="bookDetailSection"><h3>Reading Log</h3><p>{item.reading}</p></section><section className="bookDetailSection"><h3>Ownership</h3><p>{item.ownership}</p></section></div></div></Shell> }
+function BookCard({ item }) { return <Link to={`/book/${encodeURIComponent(item.title)}`} className="detailCard"><div className="detailCover"><BookCover label={item.title} small /></div><div className="detailMeta"><h4>{item.title}</h4><div className="author">{item.author}</div><div className="tags">{(item.tags||[]).map(t => <span key={t}>{t}</span>)}</div></div></Link> }
+function InventoryPage({ title, subtitle, items, hero }) { const [query, setQuery] = React.useState(''); const filtered = items.filter(i => `${i.title} ${i.author} ${(i.tags||[]).join(' ')}`.toLowerCase().includes(query.toLowerCase())); return <Shell><div className="pageView"><Link className="backLink" to="/">← Back</Link><h2 className="pageTitle">{title}</h2><p className="pageSubtitle">{subtitle}</p>{hero}<div className="searchBar"><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search titles, authors, tags..." /></div><div className="detailList">{filtered.map(item => <BookCard key={item.id} item={item} />)}</div></div></Shell> }
+function StacksPage() { const { stacks } = useLibrary(); return <InventoryPage title="The Stacks" subtitle="Physical holdings with locations, tags, and ownership details." items={stacks} hero={<div className="inventoryHero"><div className="inventoryStat"><div className="statLabel">Physical Volumes</div><div className="statValue">{stacks.length}</div></div><div className="inventoryStat"><div className="statLabel">On Loan</div><div className="statValue">{stacks.filter(b=>b.status === 'On Loan').length}</div></div><div className="inventoryStat"><div className="statLabel">Signed</div><div className="statValue">{stacks.filter(b=>(b.tags||[]).includes('Signed')).length}</div></div></div>} /> }
+function ArchivesPage() { const { archives } = useLibrary(); return <InventoryPage title="The Archives" subtitle="Digital holdings and future local-file support." items={archives} hero={<div className="inventoryHero"><div className="inventoryStat"><div className="statLabel">Digital Volumes</div><div className="statValue">{archives.length}</div></div><div className="inventoryStat"><div className="statLabel">Audiobooks</div><div className="statValue">{archives.filter(b=>b.type === 'Audiobook').length}</div></div><div className="inventoryStat"><div className="statLabel">Local Files</div><div className="statValue">0</div></div></div>} /> }
+function CirculationPage() { const { stacks } = useLibrary(); const loaned = stacks.filter(b=>b.status === 'On Loan'); return <InventoryPage title="The Circulation Desk" subtitle="Books currently out on loan and active circulation status." items={loaned} hero={<div className="inventoryHero"><div className="inventoryStat"><div className="statLabel">Out on Loan</div><div className="statValue">{loaned.length}</div></div><div className="inventoryStat"><div className="statLabel">Due This Week</div><div className="statValue">0</div></div><div className="inventoryStat"><div className="statLabel">Borrowers</div><div className="statValue">0</div></div></div>} /> }
+function ReadingLedgerPage() { 
+  const { queue } = useLibrary();
+  const [active, setActive] = React.useState(null); 
+  return <Shell><div className="pageView"><Link className="backLink" to="/">← Back</Link><h2 className="pageTitle">The Reading Ledger</h2><p className="pageSubtitle">Queue, currently reading, and completed reading annals.</p><div className="ledgerGrid"><section className="ledgerPanel"><div className="panelTop"><h3>The Queue</h3><div className="panelPill">{queue.length} books</div></div>{queue.length === 0 && <p className="pageSubtitle">Queue is empty.</p>}<div className="coverRow wrap largeQueue">{queue.map((q) => <button key={q.id} className={`queueThumb ${active === q ? 'active' : ''}`} onClick={() => setActive(q)}><BookCover label={q.title} small /></button>)}</div><div className="ledgerStats"><div><span>Queue</span><strong>{queue.length}</strong></div><div><span>Reading</span><strong>0</strong></div><div><span>Completed</span><strong>0</strong></div></div></section><section className="ledgerPanel deskPanel"><div className="panelTop"><h3>On the Desk</h3><div className="panelPill">Current read</div></div>{active ? <div className="deskBlock"><BookCover label={active.title} /><div><div className="kicker">Currently Reading</div><h4>{active.title}</h4><p>{active.reading || 'Private notes, quotes, and progress.'}</p><textarea placeholder="Write a note..." defaultValue={active.provenance || ''} readOnly /></div></div> : <p className="pageSubtitle">No active reading selected.</p>}</section><section className="ledgerPanel annalsPanel"><div className="panelTop"><h3>The Annals</h3><div className="panelPill">Yearly timeline</div></div><div className="timelineBlock"><p className="pageSubtitle">No history available.</p></div></section></div></div></Shell> 
+}
+function DeparturesPage() { const { departures } = useLibrary(); return <Shell><div className="pageView"><Link className="backLink" to="/">← Back</Link><h2 className="pageTitle">The Ledger of Departures</h2><p className="pageSubtitle">Books that left the collection permanently.</p><div className="departuresGrid">{departures.map(d => <div key={d.id} className="departureCard"><BookCover label={d.status} small muted /><div><h4>{d.title}</h4><p>{d.status}</p><div className="tags"><span>{d.status}</span><span>Archived</span></div></div></div>)}</div></div></Shell> }
+function CatalogPage() { const { allBooks } = useLibrary(); return <Shell><div className="pageView"><Link className="backLink" to="/">← Back</Link><div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><h2 className="pageTitle">Detailed Catalog</h2><Link to="/add-book" className="primaryBtn">Add Book</Link></div><p className="pageSubtitle">A complete inventory view of the collection.</p><div className="searchBar"><input placeholder="Search the full catalog..." /></div><div className="detailList">{allBooks.map(item => <BookCard key={item.id} item={item} />)}</div></div></Shell> }
+function BookPage() { 
+  const { allBooks } = useLibrary();
+  const { title } = useParams(); 
+  const decoded = decodeURIComponent(title || ''); 
+  const item = allBooks.find(b => b.title === decoded) || { author: 'Unknown Author', status: 'Unknown', location: 'Unassigned', cataloged: 'Unknown', provenance: 'No notes.', reading: 'No log.', ownership: 'Unknown.' }; 
+  return <Shell><div className="pageView"><Link className="backLink" to="/">← Back</Link><div className="bookHero"><BookCover label={decoded || 'Book'} /><div className="bookHeroText"><div style={{display:'flex',justifyContent:'space-between'}}><h2 className="pageTitle">{decoded}</h2>{item.id && <Link to={`/edit-book/${item.id}`} className="backLink" style={{alignSelf:'center',marginBottom:0}}>Edit</Link>}</div><div className="author bookHeroAuthor">{item.author}</div><div className="tags"><span>{item.status}</span><span>{item.location}</span></div><div className="bookMetaGrid"><div><span>Status</span><strong>{item.status}</strong></div><div><span>Location</span><strong>{item.location}</strong></div><div><span>Cataloged</span><strong>{item.cataloged}</strong></div></div></div></div><div className="bookDetailSections"><section className="bookDetailSection"><h3>Provenance</h3><p>{item.provenance}</p></section><section className="bookDetailSection"><h3>Reading Log</h3><p>{item.reading}</p></section><section className="bookDetailSection"><h3>Ownership</h3><p>{item.ownership}</p></section></div></div></Shell> 
+}
+
 function Login() {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
@@ -72,6 +98,7 @@ function Login() {
 export default function App() { 
   const [user, setUser] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
+  const [books, setBooks] = React.useState([]);
 
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -81,11 +108,47 @@ export default function App() {
     return unsubscribe;
   }, []);
 
+  React.useEffect(() => {
+    if (!user) return;
+    const q = query(collection(db, 'books'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setBooks(data);
+    });
+    return unsubscribe;
+  }, [user]);
+
   if (loading) return <div className="page" style={{ textAlign: 'center', marginTop: '100px', fontFamily: 'Cormorant Garamond', fontSize: '24px' }}>Loading...</div>;
 
   if (!user) {
     return <BrowserRouter><Login /></BrowserRouter>;
   }
 
-  return <BrowserRouter><Routes><Route path="/" element={<Home />} /><Route path="/stacks" element={<StacksPage />} /><Route path="/archives" element={<ArchivesPage />} /><Route path="/circulation" element={<CirculationPage />} /><Route path="/reading-ledger" element={<ReadingLedgerPage />} /><Route path="/departures" element={<DeparturesPage />} /><Route path="/catalog" element={<CatalogPage />} /><Route path="/book/:title" element={<BookPage />} /></Routes></BrowserRouter> 
+  const stacks = books.filter(b => b.type === 'Physical' && ['Owned', 'On Loan', 'Currently Reading'].includes(b.status));
+  const archives = books.filter(b => (b.type === 'Ebook' || b.type === 'Audiobook') && ['Owned', 'On Loan', 'Currently Reading'].includes(b.status));
+  const departures = books.filter(b => ['Gifted', 'Sold', 'Donated'].includes(b.status));
+  const queue = books.filter(b => b.status === 'Queue');
+  const recent = [...books].sort((a,b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0)).slice(0, 5);
+  
+  const libraryData = { stacks, archives, departures, queue, recent, allBooks: books };
+
+  return (
+    <BookContext.Provider value={libraryData}>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/stacks" element={<StacksPage />} />
+          <Route path="/archives" element={<ArchivesPage />} />
+          <Route path="/circulation" element={<CirculationPage />} />
+          <Route path="/reading-ledger" element={<ReadingLedgerPage />} />
+          <Route path="/departures" element={<DeparturesPage />} />
+          <Route path="/catalog" element={<CatalogPage />} />
+          <Route path="/book/:title" element={<BookPage />} />
+          <Route path="/add-book" element={<BookForm />} />
+          <Route path="/edit-book/:id" element={<BookForm />} />
+        </Routes>
+      </BrowserRouter>
+    </BookContext.Provider>
+  ); 
+}outer> 
 }
