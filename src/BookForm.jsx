@@ -40,6 +40,7 @@ export default function BookForm() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState(defaultBook);
   const [loading, setLoading] = useState(!!id);
+  const [fetchingCover, setFetchingCover] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -58,6 +59,7 @@ export default function BookForm() {
 
   const handleFetchCover = async () => {
     if (!formData.title && !formData.isbn) return alert('Please enter a title or ISBN first.');
+    setFetchingCover(true);
     try {
       let url = null;
 
@@ -88,9 +90,11 @@ export default function BookForm() {
       // 3. Try OpenLibrary text search as a final fallback
       if (!url && formData.title) {
         const olRes = await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(formData.title)}${formData.author ? '&author='+encodeURIComponent(formData.author) : ''}&limit=1`);
-        const olData = await olRes.json();
-        const coverId = olData.docs?.[0]?.cover_i;
-        if (coverId) url = `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`;
+        if (olRes.ok) {
+          const olData = await olRes.json();
+          const coverId = olData.docs?.[0]?.cover_i;
+          if (coverId) url = `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`;
+        }
       }
 
       if (url) {
@@ -99,8 +103,9 @@ export default function BookForm() {
         alert('No cover found on Google Books or OpenLibrary. You may need to paste an image URL manually.');
       }
     } catch (e) {
-      alert('Error fetching cover.');
+      alert('Error fetching cover. Check your connection or try entering an ISBN.');
     }
+    setFetchingCover(false);
   };
 
   const handleChange = (e) => {
@@ -141,7 +146,7 @@ export default function BookForm() {
         <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '20px', marginTop: '20px' }}>
           <div className="panel" style={{ display: 'grid', gap: '15px' }}>
             <div className="searchBar" style={{ margin: 0 }}>
-              <div style={{display:"flex", justifyContent:"space-between"}}><label style={{display: "block", marginBottom: "4px", fontSize: "12px", color: "var(--muted)"}}>Title</label><button type="button" onClick={handleFetchCover} style={{fontSize:"10px", padding:"2px 6px", borderRadius:"4px", background:"#efe4d0", border:"1px solid #d8c6ad", cursor:"pointer", color:"#6d5d48"}}>Fetch Cover API</button></div>
+              <div style={{display:"flex", justifyContent:"space-between"}}><label style={{display: "block", marginBottom: "4px", fontSize: "12px", color: "var(--muted)"}}>Title</label><button type="button" onClick={handleFetchCover} disabled={fetchingCover} style={{fontSize:"10px", padding:"2px 6px", borderRadius:"4px", background:fetchingCover?"#d8c6ad":"#efe4d0", border:"1px solid #d8c6ad", cursor:fetchingCover?"wait":"pointer", color:"#6d5d48"}}>{fetchingCover ? 'Fetching...' : 'Fetch Cover API'}</button></div>
               <input name="title" value={formData.title} onChange={handleChange} required />
             </div>
             
