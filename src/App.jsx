@@ -31,6 +31,7 @@ function Shell({ children }) { return <div className="page"><Header />{children}
 function Home() { 
   const { stacks, archives, departures, queue, recent, allBooks } = useLibrary();
   const currentlyReading = allBooks.find(b => b.status === 'Currently Reading');
+  const annals = allBooks.filter(b => b.finishedAt).sort((a,b) => new Date(b.finishedAt) - new Date(a.finishedAt)).slice(0, 5);
   
   return (<Shell>
   <section className="panel hero"><div className="heroText"><div className="kicker">On the Desk.</div><h2>{currentlyReading ? currentlyReading.title : 'Nothing currently on the desk'}</h2><p>{currentlyReading ? currentlyReading.reading : 'No active reading progress logged.'}</p></div>{currentlyReading && <Link to={`/book/${encodeURIComponent(currentlyReading.title)}`} className="primaryBtn" style={{textAlign:'center'}}>View Log</Link>}</section>
@@ -152,4 +153,5 @@ export default function App() {
     </BookContext.Provider>
   ); 
 }
+
 
