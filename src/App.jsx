@@ -150,5 +150,4 @@ export default function App() {
       </BrowserRouter>
     </BookContext.Provider>
   ); 
-}outer> 
 }
