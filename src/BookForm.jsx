@@ -115,6 +115,7 @@ export default function BookForm() {
                 <label style={{display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)'}}>Status</label>
                 <select name="status" value={formData.status} onChange={handleChange} style={{ width: '100%', border: '1px solid var(--line)', background: '#fffaf6', borderRadius: '999px', padding: '12px 16px', font: 'inherit', color: 'var(--ink)' }}>
                   <option>Owned</option>
+                  <option>Borrowed</option>
                   <option>On Loan</option>
                   <option>Currently Reading</option>
                   <option>Queue</option>
