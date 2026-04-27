@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Link, useParams } from 'react-router-dom'
 import './styles.css'
 import { auth, db } from './firebase'
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth'
-import { collection, onSnapshot, query } from 'firebase/firestore'
+import { collection, onSnapshot, query, writeBatch, doc } from 'firebase/firestore'
 import BookForm from './BookForm'
 import GoodreadsImporter from './GoodreadsImporter'
 
@@ -52,6 +52,9 @@ function ArchivesPage() { const { archives } = useLibrary(); return <InventoryPa
 function CirculationPage() { const { stacks } = useLibrary(); const loaned = stacks.filter(b=>b.status === 'On Loan'); return <InventoryPage title="The Circulation Desk" subtitle="Books currently out on loan and active circulation status." items={loaned} hero={<div className="inventoryHero"><div className="inventoryStat"><div className="statLabel">Out on Loan</div><div className="statValue">{loaned.length}</div></div><div className="inventoryStat"><div className="statLabel">Due This Week</div><div className="statValue">0</div></div><div className="inventoryStat"><div className="statLabel">Borrowers</div><div className="statValue">0</div></div></div>} /> }
 function ReadingLedgerPage() {
   const { queue, allBooks } = useLibrary();
+  const [managing, setManaging] = React.useState(false);
+  const [selected, setSelected] = React.useState(new Set());
+
   const annals = allBooks.filter(b => b.finishedAt).sort((a,b) => new Date(b.finishedAt) - new Date(a.finishedAt));
   const groupedAnnals = {};
   annals.forEach(b => {
@@ -60,7 +63,31 @@ function ReadingLedgerPage() {
     groupedAnnals[year].push(b);
   });
 
-  return <Shell><div className="pageView"><Link className="backLink" to="/">← Back</Link><h2 className="pageTitle">The Reading Ledger</h2><p className="pageSubtitle">Queue and completed reading annals.</p><div className="ledgerGrid" style={{gridTemplateColumns: "1fr 1fr"}}><section className="ledgerPanel"><div className="panelTop"><h3>The Queue</h3><div className="panelPill">{queue.length} books</div></div>{queue.length === 0 && <p className="pageSubtitle">Queue is empty.</p>}<div className="coverRow wrap largeQueue">{queue.map((q) => <div key={q.id} className="queueThumb"><BookCover label={q.title} coverUrl={q.coverUrl} small /></div>)}</div><div className="ledgerStats"><div><span>Queue</span><strong>{queue.length}</strong></div><div><span>Completed</span><strong>{annals.length}</strong></div></div></section><section className="ledgerPanel annalsPanel"><div className="panelTop"><h3>The Annals</h3><div className="panelPill">Yearly timeline</div></div><div className="timelineBlock">{annals.length === 0 ? <p className="pageSubtitle">No history available.</p> : Object.entries(groupedAnnals).sort((a,b)=>b[0]-a[0]).map(([year, books]) => <div key={year} style={{marginBottom: "16px"}}><div className="year" style={{marginBottom: "8px"}}>{year}</div>{books.map(b => <div key={b.id} className="entry" style={{borderLeft: "2px solid var(--line)", paddingLeft: "10px", marginLeft: "4px", marginBottom: "8px"}}>Finished {b.title} &middot; {new Date(b.finishedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" })}</div>)}</div>)}</div></section></div></div></Shell>;
+  const toggleSelect = (id) => {
+    if (!managing) return;
+    const next = new Set(selected);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setSelected(next);
+  };
+
+  const selectAll = () => {
+    if (selected.size === queue.length) setSelected(new Set());
+    else setSelected(new Set(queue.map(q => q.id)));
+  };
+
+  const deleteSelected = async () => {
+    if (!window.confirm(`Permanently delete ${selected.size} books?`)) return;
+    const batch = writeBatch(db);
+    selected.forEach(id => {
+      batch.delete(doc(db, 'books', id));
+    });
+    await batch.commit();
+    setSelected(new Set());
+    setManaging(false);
+  };
+
+  return <Shell><div className="pageView"><Link className="backLink" to="/">← Back</Link><h2 className="pageTitle">The Reading Ledger</h2><p className="pageSubtitle">Queue and completed reading annals.</p><div className="ledgerGrid" style={{gridTemplateColumns: "1fr 1fr"}}><section className="ledgerPanel"><div className="panelTop"><h3>The Queue</h3><div style={{display:'flex',gap:'8px'}}>{managing ? <><button onClick={selectAll} className="primaryBtn" style={{padding:'4px 10px',fontSize:'12px',background:'var(--muted)'}}>{selected.size === queue.length ? 'Deselect All' : 'Select All'}</button><button onClick={deleteSelected} disabled={selected.size===0} className="primaryBtn" style={{padding:'4px 10px',fontSize:'12px',background:selected.size===0?'#ccc':'#c94a4a'}}>Delete ({selected.size})</button><button onClick={()=>setManaging(false)} className="primaryBtn" style={{padding:'4px 10px',fontSize:'12px',background:'transparent',color:'var(--muted)',border:'1px solid var(--muted)'}}>Done</button></> : <button onClick={()=>setManaging(true)} className="primaryBtn" style={{padding:'4px 10px',fontSize:'12px',background:'transparent',color:'var(--muted)',border:'1px solid var(--muted)'}}>Manage</button>}<div className="panelPill">{queue.length} books</div></div></div>{queue.length === 0 && <p className="pageSubtitle">Queue is empty.</p>}<div className="coverRow wrap largeQueue">{queue.map((q) => <div key={q.id} className="queueThumb" onClick={() => toggleSelect(q.id)} style={{cursor: managing ? 'pointer' : 'default', transition: 'all 0.1s', transform: selected.has(q.id) ? 'scale(0.95)' : 'none', opacity: managing && !selected.has(q.id) ? 0.7 : 1, boxShadow: selected.has(q.id) ? '0 0 0 4px #c94a4a' : 'none', borderRadius: '4px'}}><BookCover label={q.title} coverUrl={q.coverUrl} small /></div>)}</div><div className="ledgerStats"><div><span>Queue</span><strong>{queue.length}</strong></div><div><span>Completed</span><strong>{annals.length}</strong></div></div></section><section className="ledgerPanel annalsPanel"><div className="panelTop"><h3>The Annals</h3><div className="panelPill">Yearly timeline</div></div><div className="timelineBlock">{annals.length === 0 ? <p className="pageSubtitle">No history available.</p> : Object.entries(groupedAnnals).sort((a,b)=>b[0]-a[0]).map(([year, books]) => <div key={year} style={{marginBottom: "16px"}}><div className="year" style={{marginBottom: "8px"}}>{year}</div>{books.map(b => <div key={b.id} className="entry" style={{borderLeft: "2px solid var(--line)", paddingLeft: "10px", marginLeft: "4px", marginBottom: "8px"}}>Finished {b.title} &middot; {new Date(b.finishedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" })}</div>)}</div>)}</div></section></div></div></Shell>;
 }
 function DeparturesPage() { const { departures } = useLibrary(); return <Shell><div className="pageView"><Link className="backLink" to="/">← Back</Link><h2 className="pageTitle">The Ledger of Departures</h2><p className="pageSubtitle">Books that left the collection permanently.</p><div className="departuresGrid">{departures.map(d => <div key={d.id} className="departureCard"><BookCover label={d.status} coverUrl={d.coverUrl} small muted /><div><h4>{d.title}</h4><p>{d.status}</p><div className="tags"><span>{d.status}</span><span>Archived</span></div></div></div>)}</div></div></Shell> }
 function CatalogPage() { const { allBooks } = useLibrary(); return <Shell><div className="pageView"><Link className="backLink" to="/">← Back</Link><div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><h2 className="pageTitle">Detailed Catalog</h2><div style={{display: "flex", gap: "10px"}}><GoodreadsImporter /><Link to="/add-book" className="primaryBtn">Add Book</Link></div></div><p className="pageSubtitle">A complete inventory view of the collection.</p><div className="searchBar"><input placeholder="Search the full catalog..." /></div><div className="detailList">{allBooks.map(item => <BookCard key={item.id} item={item} />)}</div></div></Shell> }
