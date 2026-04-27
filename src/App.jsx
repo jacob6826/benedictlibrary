@@ -2,9 +2,19 @@ import React from 'react'
 import { BrowserRouter, Routes, Route, Link, useParams } from 'react-router-dom'
 import './styles.css'
 import { recent, queue, stacks, archives, departures, allBooks, detailData } from './data'
+import { auth } from './firebase'
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth'
 
 function BookCover({ label, small, muted }) { return <div className={`bookCover ${small ? 'small' : ''} ${muted ? 'mutedCover' : ''}`}>{label}</div> }
-function Header() { return <div className="titleRow"><span className="ornament" /><h1>Benedict Library</h1><span className="ornament" /></div> }
+function Header() { 
+  const handleLogout = () => { if (auth.currentUser) signOut(auth); };
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div className="titleRow"><span className="ornament" /><h1>Benedict Library</h1><span className="ornament" /></div>
+      {auth.currentUser && <button onClick={handleLogout} className="backLink" style={{ cursor: 'pointer', fontSize: '10px', padding: '4px 10px', marginTop: '-10px', marginBottom: '16px', background: 'transparent', color: 'var(--muted)', border: '1px solid var(--line)' }}>Log Out</button>}
+    </div>
+  ); 
+}
 function Shell({ children }) { return <div className="page"><Header />{children}</div> }
 
 function Home() { return (<Shell>
@@ -24,4 +34,58 @@ function ReadingLedgerPage() { const [active, setActive] = React.useState('Moby 
 function DeparturesPage() { return <Shell><div className="pageView"><Link className="backLink" to="/">← Back</Link><h2 className="pageTitle">The Ledger of Departures</h2><p className="pageSubtitle">Books that left the collection permanently.</p><div className="departuresGrid">{departures.map(d => <div key={d.title} className="departureCard"><BookCover label={d.tag} small muted /><div><h4>{d.title}</h4><p>{d.status}</p><div className="tags"><span>{d.tag}</span><span>Stamped</span></div></div></div>)}</div></div></Shell> }
 function CatalogPage() { return <Shell><div className="pageView"><Link className="backLink" to="/">← Back</Link><h2 className="pageTitle">Detailed Catalog</h2><p className="pageSubtitle">A complete inventory view of the collection.</p><div className="searchBar"><input placeholder="Search the full catalog..." /></div><div className="detailList">{allBooks.map(item => <BookCard key={item.title} item={item} />)}</div></div></Shell> }
 function BookPage() { const { title } = useParams(); const decoded = decodeURIComponent(title || ''); const item = detailData[decoded] || { author: 'Unknown Author', status: 'Inventory Item', location: 'Unassigned', cataloged: 'Unknown', provenance: 'No notes yet.', reading: 'No reading log available.', ownership: 'Ownership details pending.' }; return <Shell><div className="pageView"><Link className="backLink" to="/">← Back</Link><div className="bookHero"><BookCover label={decoded || 'Book'} /><div className="bookHeroText"><h2 className="pageTitle">{decoded}</h2><div className="author bookHeroAuthor">{item.author}</div><div className="tags"><span>{item.status}</span><span>{item.location}</span></div><div className="bookMetaGrid"><div><span>Status</span><strong>{item.status}</strong></div><div><span>Location</span><strong>{item.location}</strong></div><div><span>Cataloged</span><strong>{item.cataloged}</strong></div></div></div></div><div className="bookDetailSections"><section className="bookDetailSection"><h3>Provenance</h3><p>{item.provenance}</p></section><section className="bookDetailSection"><h3>Reading Log</h3><p>{item.reading}</p></section><section className="bookDetailSection"><h3>Ownership</h3><p>{item.ownership}</p></section></div></div></Shell> }
-export default function App() { return <BrowserRouter><Routes><Route path="/" element={<Home />} /><Route path="/stacks" element={<StacksPage />} /><Route path="/archives" element={<ArchivesPage />} /><Route path="/circulation" element={<CirculationPage />} /><Route path="/reading-ledger" element={<ReadingLedgerPage />} /><Route path="/departures" element={<DeparturesPage />} /><Route path="/catalog" element={<CatalogPage />} /><Route path="/book/:title" element={<BookPage />} /></Routes></BrowserRouter> }
+function Login() {
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [error, setError] = React.useState('');
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  return (
+    <Shell>
+      <div className="pageView">
+        <h2 className="pageTitle" style={{ textAlign: 'center' }}>Librarian Access</h2>
+        <div className="panel" style={{ maxWidth: '360px', margin: '40px auto', padding: '30px' }}>
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            {error && <p style={{ color: 'red', fontSize: '13px', margin: '0' }}>{error}</p>}
+            <div className="searchBar" style={{ margin: 0 }}>
+              <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
+            </div>
+            <div className="searchBar" style={{ margin: 0 }}>
+              <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
+            </div>
+            <button type="submit" className="primaryBtn" style={{ marginTop: '5px', cursor: 'pointer' }}>Log In</button>
+          </form>
+        </div>
+      </div>
+    </Shell>
+  );
+}
+
+export default function App() { 
+  const [user, setUser] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+    });
+    return unsubscribe;
+  }, []);
+
+  if (loading) return <div className="page" style={{ textAlign: 'center', marginTop: '100px', fontFamily: 'Cormorant Garamond', fontSize: '24px' }}>Loading...</div>;
+
+  if (!user) {
+    return <BrowserRouter><Login /></BrowserRouter>;
+  }
+
+  return <BrowserRouter><Routes><Route path="/" element={<Home />} /><Route path="/stacks" element={<StacksPage />} /><Route path="/archives" element={<ArchivesPage />} /><Route path="/circulation" element={<CirculationPage />} /><Route path="/reading-ledger" element={<ReadingLedgerPage />} /><Route path="/departures" element={<DeparturesPage />} /><Route path="/catalog" element={<CatalogPage />} /><Route path="/book/:title" element={<BookPage />} /></Routes></BrowserRouter> 
+}
