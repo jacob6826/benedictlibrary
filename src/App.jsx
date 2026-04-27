@@ -5,6 +5,7 @@ import { auth, db } from './firebase'
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth'
 import { collection, onSnapshot, query } from 'firebase/firestore'
 import BookForm from './BookForm'
+import GoodreadsImporter from './GoodreadsImporter'
 
 const BookContext = React.createContext({ stacks:[], archives:[], departures:[], queue:[], recent:[], allBooks:[] });
 function useLibrary() { return React.useContext(BookContext); }
@@ -56,7 +57,7 @@ function ReadingLedgerPage() {
   return <Shell><div className="pageView"><Link className="backLink" to="/">← Back</Link><h2 className="pageTitle">The Reading Ledger</h2><p className="pageSubtitle">Queue, currently reading, and completed reading annals.</p><div className="ledgerGrid"><section className="ledgerPanel"><div className="panelTop"><h3>The Queue</h3><div className="panelPill">{queue.length} books</div></div>{queue.length === 0 && <p className="pageSubtitle">Queue is empty.</p>}<div className="coverRow wrap largeQueue">{queue.map((q) => <button key={q.id} className={`queueThumb ${active === q ? 'active' : ''}`} onClick={() => setActive(q)}><BookCover label={q.title} coverUrl={q.coverUrl} small /></button>)}</div><div className="ledgerStats"><div><span>Queue</span><strong>{queue.length}</strong></div><div><span>Reading</span><strong>{allBooks.filter(b=>b.status === 'Currently Reading').length}</strong></div><div><span>Completed</span><strong>{annals.length}</strong></div></div></section><section className="ledgerPanel deskPanel"><div className="panelTop"><h3>On the Desk</h3><div className="panelPill">Current read</div></div>{active ? <div className="deskBlock"><BookCover label={active.title} coverUrl={active.coverUrl} /><div><div className="kicker">Currently Reading</div><h4>{active.title}</h4><p>{active.reading || 'Private notes, quotes, and progress.'}</p><textarea placeholder="Write a note..." defaultValue={active.provenance || ''} readOnly /></div></div> : <p className="pageSubtitle">No active reading selected.</p>}</section><section className="ledgerPanel annalsPanel"><div className="panelTop"><h3>The Annals</h3><div className="panelPill">Yearly timeline</div></div><div className="timelineBlock">{annals.length === 0 ? <p className="pageSubtitle">No history available.</p> : annals.map(b => <div key={b.id} className="entry"><div className="year">{new Date(b.finishedAt).getFullYear()}</div><div>Finished {b.title} · {new Date(b.finishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}</div></div>)}</div></section></div></div></Shell> 
 }
 function DeparturesPage() { const { departures } = useLibrary(); return <Shell><div className="pageView"><Link className="backLink" to="/">← Back</Link><h2 className="pageTitle">The Ledger of Departures</h2><p className="pageSubtitle">Books that left the collection permanently.</p><div className="departuresGrid">{departures.map(d => <div key={d.id} className="departureCard"><BookCover label={d.status} coverUrl={d.coverUrl} small muted /><div><h4>{d.title}</h4><p>{d.status}</p><div className="tags"><span>{d.status}</span><span>Archived</span></div></div></div>)}</div></div></Shell> }
-function CatalogPage() { const { allBooks } = useLibrary(); return <Shell><div className="pageView"><Link className="backLink" to="/">← Back</Link><div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><h2 className="pageTitle">Detailed Catalog</h2><Link to="/add-book" className="primaryBtn">Add Book</Link></div><p className="pageSubtitle">A complete inventory view of the collection.</p><div className="searchBar"><input placeholder="Search the full catalog..." /></div><div className="detailList">{allBooks.map(item => <BookCard key={item.id} item={item} />)}</div></div></Shell> }
+function CatalogPage() { const { allBooks } = useLibrary(); return <Shell><div className="pageView"><Link className="backLink" to="/">← Back</Link><div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><h2 className="pageTitle">Detailed Catalog</h2><div style={{display: "flex", gap: "10px"}}><GoodreadsImporter /><Link to="/add-book" className="primaryBtn">Add Book</Link></div></div><p className="pageSubtitle">A complete inventory view of the collection.</p><div className="searchBar"><input placeholder="Search the full catalog..." /></div><div className="detailList">{allBooks.map(item => <BookCard key={item.id} item={item} />)}</div></div></Shell> }
 function BookPage() { 
   const { allBooks } = useLibrary();
   const { title } = useParams(); 
@@ -156,6 +157,7 @@ export default function App() {
     </BookContext.Provider>
   ); 
 }
+
 
 
 
