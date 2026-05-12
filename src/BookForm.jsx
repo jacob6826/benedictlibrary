@@ -23,6 +23,7 @@ const defaultBook = {
   author: '',
   type: 'Physical',
   status: 'Owned',
+  inQueue: false,
   location: '',
   tags: '',
   series: '',
@@ -63,6 +64,11 @@ export default function BookForm() {
       getDoc(doc(db, 'books', id)).then(docSnap => {
         if (docSnap.exists()) {
           const data = docSnap.data();
+          // Backward compatibility for old "Queue" status
+          if (data.status === 'Queue') {
+            data.status = 'Owned';
+            data.inQueue = true;
+          }
           setFormData({
             ...data,
             tags: Array.isArray(data.tags) ? data.tags.join(', ') : ''
@@ -243,12 +249,18 @@ export default function BookForm() {
                   <option>Borrowed</option>
                   <option>On Loan</option>
                   <option>Currently Reading</option>
-                  <option>Queue</option>
                   <option>Gifted</option>
                   <option>Sold</option>
                   <option>Donated</option>
                 </select>
               </div>
+            </div>
+
+            <div className="searchBar" style={{ margin: 0 }}>
+              <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '12px 16px', border: '1px solid var(--line)', borderRadius: '14px', background: formData.inQueue ? '#eef4fd' : '#fffaf3', transition: 'background 0.2s'}}>
+                <input type="checkbox" checked={formData.inQueue} onChange={e => setFormData(prev => ({...prev, inQueue: e.target.checked}))} style={{width:'18px',height:'18px',accentColor:'var(--blue)'}} />
+                <span style={{fontSize: '14px', color: 'var(--ink)'}}><strong>Add to Reading Queue</strong> — keep track of this book on the Reading Ledger.</span>
+              </label>
             </div>
 
             <div className="searchBar" style={{ margin: 0 }}>
