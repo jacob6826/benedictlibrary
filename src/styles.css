@@ -7,3 +7,18 @@
 .bookHero{display:grid;grid-template-columns:120px 1fr;gap:18px;align-items:start;border:1px solid var(--line);background:#fffaf3;border-radius:16px;padding:18px;box-shadow:0 8px 18px rgba(44,36,29,.05)}.bookHeroText .bookHeroAuthor{font-size:14px;margin-bottom:8px}.bookMetaGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.bookMetaGrid div{border:1px solid var(--line);background:linear-gradient(180deg,#f7efe2,#f1e6d6);border-radius:12px;padding:10px 12px;text-align:center}.bookMetaGrid span{display:block;font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--muted)}.bookMetaGrid strong{display:block;font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--blue)}.bookDetailSections{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}.bookDetailSection{border:1px solid var(--line);background:#fffaf3;border-radius:14px;padding:14px;min-height:140px}.bookDetailSection h3{font-family:'Cormorant Garamond',serif;font-size:24px;margin:0 0 8px}.bookDetailSection p{margin:0;color:var(--muted);font-size:12px;line-height:1.5}
 .queueThumb{background:none;border:none;padding:0;cursor:pointer}.queueThumb .bookCover{transition:transform .18s ease,box-shadow .18s ease}.queueThumb.active .bookCover,.queueThumb:hover .bookCover{transform:translateY(-2px);box-shadow:0 12px 20px rgba(44,36,29,.16)}.bookDetailSection,.ledgerPanel,.detailCard,.departureCard,.bookHero,.inventoryStat,.plaque,.panel{transition:box-shadow .18s ease,border-color .18s ease}.bookDetailSection:hover,.ledgerPanel:hover,.detailCard:hover,.departureCard:hover,.bookHero:hover,.inventoryStat:hover,.plaque:hover,.panel:hover{border-color:#c3b29a;box-shadow:0 12px 26px rgba(44,36,29,.08)}.deskPanel textarea{font-family:'Inter',sans-serif}.deskPanel textarea:focus,.searchBar input:focus{outline:none;border-color:#b79f7b;box-shadow:0 0 0 3px rgba(183,159,123,.15)}
 .bookHeroText .tags span{font-size:11px}.bookHeroAuthor{font-size:14px}.bookDetailSection{min-height:150px}.bookDetailSection p{white-space:pre-line}
+@media (max-width: 800px) {
+  .panelTop { flex-direction: column; align-items: flex-start !important; }
+  .panelTop > div { flex-wrap: wrap; }
+  .bookHero { grid-template-columns: 1fr; text-align: center; justify-items: center; }
+  .bookHeroText > div { flex-direction: column; align-items: center; gap: 10px; }
+  .bookHeroText > div > div { justify-content: center; flex-wrap: wrap; }
+  .bookMetaGrid { grid-template-columns: 1fr; }
+  .bookDetailSections { grid-template-columns: 1fr; }
+  .inventoryHero { grid-template-columns: 1fr; }
+  .ledgerStats { grid-template-columns: 1fr; }
+  .pageTitle { font-size: 32px; line-height: 1.1; margin-bottom: 8px; }
+  .titleRow h1 { font-size: 42px; }
+  .pageView > div[style*="justify-content: space-between"] { flex-direction: column; align-items: flex-start !important; gap: 12px; }
+  .pageView > div[style*="justify-content: space-between"] > div { flex-wrap: wrap; }
+}
