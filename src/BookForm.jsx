@@ -140,7 +140,7 @@ export default function BookForm() {
   return (
     <Shell>
       <div className="pageView">
-        <button type="button" className="backLink" onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', font: 'inherit' }}>← Cancel</button>
+        <button type="button" className="backLink" onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'var(--blue)' }}>← Cancel</button>
         <h2 className="pageTitle">{id ? 'Edit Book' : 'Catalog New Book'}</h2>
         
         <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '20px', marginTop: '20px' }}>
