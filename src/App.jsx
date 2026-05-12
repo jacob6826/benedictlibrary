@@ -44,7 +44,7 @@ function Home() {
   <section className="plaqueGrid"><Link to="/stacks" className="plaque linkCard"><h3>The Stacks</h3><div className="count">{stacks.length} Physical Volumes</div><p>Active physical holdings, on shelves or on loan.</p></Link><Link to="/archives" className="plaque linkCard"><h3>The Archives</h3><div className="count">{archives.length} Digital Volumes</div><p>Cataloged ebooks and audiobooks.</p></Link></section>
   <section className="middleGrid"><Link to="/reading-ledger" className="panel linkCard"><h3>Recently Cataloged</h3>{recent.length === 0 && <p className="pageSubtitle">No recently cataloged books.</p>}<div className="coverRow">{recent.map((b) => <div key={b.id} className="mini"><BookCover label={b.title} coverUrl={b.coverUrl} small /><div className="caption">New</div></div>)}</div><h3 className="queueTitle">The Queue</h3>{queue.length === 0 && <p className="pageSubtitle">Your queue is empty.</p>}<div className="coverRow">{queue.slice(0, 5).map((b) => <div key={b.id} className="mini"><BookCover label={b.title} coverUrl={b.coverUrl} small /></div>)}</div></Link><Link to="/reading-ledger" className="panel linkCard timeline"><h3>The Annals</h3>{annals.length === 0 ? <p className="pageSubtitle">No reading history.</p> : Object.entries(homeAnnalsGrouped).sort((a,b)=>b[0]-a[0]).map(([year, books]) => <div key={year} style={{marginBottom:'12px'}}><div className="year" style={{marginBottom:'6px'}}>{year}</div>{books.map(b => <div key={b.id} className="entry" style={{marginBottom:'8px'}}>Finished {b.title} &middot; {new Date(b.finishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}</div>)}</div>)}</Link></section>
   <section className="bottomGrid"><Link to="/circulation" className="panel linkCard"><h3>The Circulation Desk</h3>{stacks.filter(b => b.status === 'On Loan').length === 0 ? <p className="pageSubtitle">No books currently on loan.</p> : stacks.filter(b => b.status === 'On Loan').map(b => <div key={b.title} className="bookCard"><BookCover label="On Loan" coverUrl={b.coverUrl} small /><div><h4>{b.title}</h4><p>{b.author}</p><div className="tags"><span>On Loan</span></div></div></div>)}</Link><Link to="/departures" className="panel linkCard"><h3>The Ledger of Departures</h3>{recentDepartures.length === 0 && <p className="pageSubtitle">No departed books.</p>}{recentDepartures.map(d => <div key={d.title} className="bookCard"><BookCover label={d.status} coverUrl={d.coverUrl} small muted /><div><h4>{d.title}</h4><p>{d.status}</p><div className="tags"><span>Archived</span></div></div></div>)}</Link></section>
-  <footer className="footerLinks"><Link to="/circulation">Circulation List</Link><Link to="/catalog">Detailed Catalog</Link><Link to="/departures">Past Departures</Link></footer>
+  <footer className="footerLinks"><Link to="/circulation">Circulation List</Link><Link to="/series">The Series</Link><Link to="/catalog">Detailed Catalog</Link><Link to="/departures">Past Departures</Link></footer>
 </Shell>) }
 
 function BookCard({ item }) { const location = useLocation(); return <Link to={`/book/${encodeURIComponent(item.title)}`} state={{ from: location.pathname }} className="detailCard"><div className="detailCover"><BookCover label={item.title} coverUrl={item.coverUrl} small /></div><div className="detailMeta"><h4>{item.title}</h4><div className="author">{item.author}</div><div className="tags">{(item.tags||[]).map(t => <span key={t}>{t}</span>)}</div></div></Link> }
@@ -115,7 +115,48 @@ function BookPage() {
     await updateDoc(doc(db, 'books', item.id), { status: 'Owned', finishedAt: new Date().toISOString().split('T')[0] });
   };
 
-  return <Shell><div className="pageView"><button type="button" className="backLink" onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'var(--blue)' }}>{backLabel}</button><div className="bookHero"><BookCover label={decoded || 'Book'} coverUrl={item.coverUrl} /><div className="bookHeroText"><div style={{display:'flex',justifyContent:'space-between'}}><h2 className="pageTitle">{decoded}</h2><div style={{display:'flex',gap:'10px'}}>{item.status === 'Currently Reading' && <button onClick={handleFinish} className="primaryBtn" style={{padding:'4px 10px',fontSize:'10px',height:'fit-content',alignSelf:'center'}}>Finish Book</button>}{item.id && <Link to={`/edit-book/${item.id}`} className="backLink" style={{alignSelf:'center',marginBottom:0}}>Edit</Link>}</div></div><div className="author bookHeroAuthor">{item.author}</div><div className="tags"><span>{item.status}</span><span>{item.location}</span></div><div className="bookMetaGrid"><div><span>Status</span><strong>{item.status}</strong></div><div><span>Location</span><strong>{item.location}</strong></div><div><span>Cataloged</span><strong>{item.cataloged}</strong></div></div></div></div><div className="bookDetailSections"><section className="bookDetailSection"><h3>Provenance</h3><p>{item.provenance}</p></section><section className="bookDetailSection"><h3>Reading Log</h3><div style={{marginBottom:'10px',fontSize:'13px',color:'var(--muted)'}}>{item.startedAt && <div style={{marginBottom:'4px'}}><strong>Started:</strong> {new Date(item.startedAt).toLocaleDateString('en-US', {timeZone: 'UTC'})}</div>}{item.finishedAt && <div><strong>Finished:</strong> {new Date(item.finishedAt).toLocaleDateString('en-US', {timeZone: 'UTC'})}</div>}</div><p>{item.reading}</p></section><section className="bookDetailSection"><h3>Ownership</h3><p>{item.ownership}</p></section></div></div></Shell> 
+  return <Shell><div className="pageView"><button type="button" className="backLink" onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'var(--blue)' }}>{backLabel}</button><div className="bookHero"><BookCover label={decoded || 'Book'} coverUrl={item.coverUrl} /><div className="bookHeroText"><div style={{display:'flex',justifyContent:'space-between'}}><h2 className="pageTitle">{decoded}</h2><div style={{display:'flex',gap:'10px'}}>{item.status === 'Currently Reading' && <button onClick={handleFinish} className="primaryBtn" style={{padding:'4px 10px',fontSize:'10px',height:'fit-content',alignSelf:'center'}}>Finish Book</button>}{item.id && <Link to={`/edit-book/${item.id}`} className="backLink" style={{alignSelf:'center',marginBottom:0}}>Edit</Link>}</div></div><div className="author bookHeroAuthor">{item.author}</div>{item.series && <div style={{marginBottom:'8px',fontSize:'14px',color:'var(--blue)',fontStyle:'italic'}}><strong>{item.series}</strong> {item.seriesNumber ? `· Book ${item.seriesNumber}` : ''}</div>}<div className="tags"><span>{item.status}</span><span>{item.location}</span></div><div className="bookMetaGrid"><div><span>Status</span><strong>{item.status}</strong></div><div><span>Location</span><strong>{item.location}</strong></div><div><span>Cataloged</span><strong>{item.cataloged}</strong></div></div></div></div><div className="bookDetailSections"><section className="bookDetailSection"><h3>Provenance</h3><p>{item.provenance}</p></section><section className="bookDetailSection"><h3>Reading Log</h3><div style={{marginBottom:'10px',fontSize:'13px',color:'var(--muted)'}}>{item.startedAt && <div style={{marginBottom:'4px'}}><strong>Started:</strong> {new Date(item.startedAt).toLocaleDateString('en-US', {timeZone: 'UTC'})}</div>}{item.finishedAt && <div><strong>Finished:</strong> {new Date(item.finishedAt).toLocaleDateString('en-US', {timeZone: 'UTC'})}</div>}</div><p>{item.reading}</p></section><section className="bookDetailSection"><h3>Ownership</h3><p>{item.ownership}</p></section></div></div></Shell> 
+}
+
+function SeriesPage() {
+  const navigate = useNavigate();
+  const { allBooks } = useLibrary();
+  
+  const seriesGroups = allBooks.reduce((acc, b) => {
+    if (b.series) {
+      acc[b.series] = acc[b.series] || [];
+      acc[b.series].push(b);
+    }
+    return acc;
+  }, {});
+
+  const [query, setQuery] = React.useState('');
+  const seriesNames = Object.keys(seriesGroups).filter(s => s.toLowerCase().includes(query.toLowerCase())).sort();
+
+  return <Shell>
+    <div className="pageView">
+      <button type="button" className="backLink" onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'var(--blue)' }}>← Back</button>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><h2 className="pageTitle">The Series</h2></div>
+      <p className="pageSubtitle">Collections and series you own.</p>
+      <div className="searchBar"><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search series..." /></div>
+      
+      <div className="timelineBlock" style={{marginTop: '20px'}}>
+        {seriesNames.length === 0 ? <p className="pageSubtitle">No series found.</p> : seriesNames.map(s => (
+          <div key={s} style={{marginBottom: "32px"}}>
+            <h3 style={{marginBottom: "12px", borderBottom: '1px solid var(--line)', paddingBottom: '8px', fontSize: '24px'}}>{s}</h3>
+            <div className="detailList">
+              {seriesGroups[s].sort((a,b) => {
+                const numA = parseFloat(a.seriesNumber);
+                const numB = parseFloat(b.seriesNumber);
+                if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+                return a.title.localeCompare(b.title);
+              }).map(item => <BookCard key={item.id} item={item} />)}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </Shell>
 }
 
 function Login() {
@@ -204,6 +245,7 @@ export default function App() {
           <Route path="/book/:title" element={<BookPage />} />
           <Route path="/add-book" element={<BookForm />} />
           <Route path="/edit-book/:id" element={<BookForm />} />
+          <Route path="/series" element={<SeriesPage />} />
         </Routes>
       </BrowserRouter>
     </BookContext.Provider>

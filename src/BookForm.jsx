@@ -25,6 +25,8 @@ const defaultBook = {
   status: 'Owned',
   location: '',
   tags: '',
+  series: '',
+  seriesNumber: '',
   cataloged: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
   startedAt: '',
   finishedAt: '',
@@ -175,6 +177,17 @@ export default function BookForm() {
             <div className="searchBar" style={{ margin: 0 }}>
               <label style={{display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)'}}>ISBN (Optional - highly recommended for accurate covers)</label>
               <input name="isbn" value={formData.isbn || ''} onChange={handleChange} placeholder="e.g. 9780143127550" />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '15px' }}>
+              <div className="searchBar" style={{ margin: 0 }}>
+                <label style={{display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)'}}>Series (Optional)</label>
+                <input name="series" value={formData.series || ''} onChange={handleChange} placeholder="e.g. The Lord of the Rings" />
+              </div>
+              <div className="searchBar" style={{ margin: 0 }}>
+                <label style={{display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)'}}>Series #</label>
+                <input name="seriesNumber" value={formData.seriesNumber || ''} onChange={handleChange} placeholder="e.g. 1" />
+              </div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
