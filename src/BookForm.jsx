@@ -41,6 +41,13 @@ export default function BookForm() {
   const [formData, setFormData] = useState(defaultBook);
   const [loading, setLoading] = useState(!!id);
   const [fetchingCover, setFetchingCover] = useState(false);
+  const [customLocations, setCustomLocations] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('benedict_locations')) || []; } catch(e) { return []; }
+  });
+  const [showOtherLocation, setShowOtherLocation] = useState(false);
+  const [saveNewLocation, setSaveNewLocation] = useState(true);
+
+  const allLocations = Array.from(new Set(['Living Room Shelf', 'Office', 'Bedroom', ...customLocations]));
 
   useEffect(() => {
     if (id) {
@@ -51,11 +58,16 @@ export default function BookForm() {
             ...data,
             tags: Array.isArray(data.tags) ? data.tags.join(', ') : ''
           });
+          if (data.location && !allLocations.includes(data.location)) {
+            setShowOtherLocation(true);
+          }
         }
         setLoading(false);
       });
+    } else {
+      setFormData(prev => ({ ...prev, location: allLocations[0] }));
     }
-  }, [id]);
+  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleFetchCover = async () => {
     if (!formData.title && !formData.isbn) return alert('Please enter a title or ISBN first.');
@@ -115,6 +127,11 @@ export default function BookForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (showOtherLocation && saveNewLocation && formData.location && !allLocations.includes(formData.location)) {
+      const newLocations = [...customLocations, formData.location];
+      setCustomLocations(newLocations);
+      localStorage.setItem('benedict_locations', JSON.stringify(newLocations));
+    }
     const dataToSave = {
       ...formData,
       tags: formData.tags.split(',').map(t => t.trim()).filter(t => t)
@@ -187,7 +204,11 @@ export default function BookForm() {
 
             <div className="searchBar" style={{ margin: 0 }}>
               <label style={{display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)'}}>Location</label>
-              <input name="location" value={formData.location} onChange={handleChange} placeholder="e.g. Living Room Shelf" />
+              <select value={showOtherLocation || (formData.location && !allLocations.includes(formData.location)) ? 'Other...' : (formData.location || allLocations[0])} onChange={(e) => { if (e.target.value === 'Other...') { setShowOtherLocation(true); if (allLocations.includes(formData.location)) setFormData(prev => ({...prev, location: ''})); } else { setShowOtherLocation(false); setFormData(prev => ({...prev, location: e.target.value})); } }} style={{ width: '100%', border: '1px solid var(--line)', background: '#fffaf6', borderRadius: '999px', padding: '12px 16px', font: 'inherit', color: 'var(--ink)' }}>
+                {allLocations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
+                <option value="Other...">Other...</option>
+              </select>
+              {showOtherLocation && <div style={{ marginTop: '10px' }}><input name="location" value={formData.location} onChange={handleChange} placeholder="Enter new location..." autoFocus /><label style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px', fontSize: '12px', color: 'var(--muted)' }}><input type="checkbox" checked={saveNewLocation} onChange={e => setSaveNewLocation(e.target.checked)} />Save this location to dropdown options</label></div>}
             </div>
 
             <div className="searchBar" style={{ margin: 0 }}>
