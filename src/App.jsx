@@ -35,7 +35,7 @@ function Shell({ children }) { return <div className="page"><Header />{children}
 function Home() { 
   const { stacks, archives, departures, queue, recent, allBooks } = useLibrary();
   const currentlyReading = allBooks.find(b => b.status === 'Currently Reading');
-  const annals = allBooks.filter(b => b.finishedAt).sort((a,b) => new Date(b.finishedAt) - new Date(a.finishedAt)).slice(0, 5);
+  const annals = allBooks.filter(b => b.finishedAt).sort((a,b) => new Date(b.finishedAt) - new Date(a.finishedAt)).slice(0, 8);
   const homeAnnalsGrouped = annals.reduce((acc, b) => { const y = new Date(b.finishedAt).getFullYear(); acc[y] = acc[y] || []; acc[y].push(b); return acc; }, {});
   const recentDepartures = [...departures].sort((a,b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0)).slice(0, 3);
   
