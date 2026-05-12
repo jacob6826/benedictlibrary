@@ -47,7 +47,7 @@ function Home() {
   <footer className="footerLinks"><Link to="/circulation">Circulation List</Link><Link to="/series">The Series</Link><Link to="/catalog">Detailed Catalog</Link><Link to="/departures">Past Departures</Link></footer>
 </Shell>) }
 
-function BookCard({ item }) { const location = useLocation(); return <Link to={`/book/${encodeURIComponent(item.title)}`} state={{ from: location.pathname }} className="detailCard"><div className="detailCover"><BookCover label={item.title} coverUrl={item.coverUrl} small /></div><div className="detailMeta"><h4>{item.title}</h4><div className="author">{item.author}</div><div className="tags">{(item.tags||[]).map(t => <span key={t}>{t}</span>)}</div></div></Link> }
+function BookCard({ item }) { const location = useLocation(); return <Link to={`/book/${encodeURIComponent(item.title)}`} state={{ from: location.pathname }} className="detailCard"><div className="detailCover"><BookCover label={item.title} coverUrl={item.coverUrl} small /></div><div className="detailMeta"><h4>{item.title}</h4><div className="author">{item.author}</div><div className="tags">{item.series && <span style={{backgroundColor:'#e8ebf2',borderColor:'#c1c9dd',color:'#4a5d85'}}>{item.series}{item.seriesNumber ? ` #${item.seriesNumber}` : ''}</span>}{(item.tags||[]).map(t => <span key={t}>{t}</span>)}</div></div></Link> }
 function InventoryPage({ title, subtitle, items, renderHero }) { const navigate = useNavigate(); const [query, setQuery] = React.useState(''); const filtered = items.filter(i => `${i.title} ${i.author} ${i.status} ${i.type} ${(i.tags||[]).join(' ')}`.toLowerCase().includes(query.toLowerCase())); return <Shell><div className="pageView"><button type="button" className="backLink" onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'var(--blue)' }}>← Back</button><h2 className="pageTitle">{title}</h2><p className="pageSubtitle">{subtitle}</p>{renderHero ? renderHero(query, setQuery) : null}<div className="searchBar"><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search titles, authors, tags..." /></div><div className="detailList">{filtered.map(item => <BookCard key={item.id} item={item} />)}</div></div></Shell> }
 function StacksPage() { const { stacks } = useLibrary(); return <InventoryPage title="The Stacks" subtitle="Physical holdings with locations, tags, and ownership details." items={stacks} renderHero={(query, setQuery) => <div className="inventoryHero"><div className="inventoryStat" onClick={()=>setQuery('')} style={{cursor:'pointer',borderColor:query===''?'var(--blue)':''} }><div className="statLabel">Physical Volumes</div><div className="statValue">{stacks.length}</div></div><div className="inventoryStat" onClick={()=>setQuery('On Loan')} style={{cursor:'pointer',borderColor:query==='On Loan'?'var(--blue)':''} }><div className="statLabel">On Loan</div><div className="statValue">{stacks.filter(b=>b.status === 'On Loan').length}</div></div><div className="inventoryStat" onClick={()=>setQuery('Signed')} style={{cursor:'pointer',borderColor:query==='Signed'?'var(--blue)':''} }><div className="statLabel">Signed</div><div className="statValue">{stacks.filter(b=>(b.tags||[]).includes('Signed')).length}</div></div></div>} /> }
 function ArchivesPage() { const { archives } = useLibrary(); return <InventoryPage title="The Archives" subtitle="Digital holdings and future local-file support." items={archives} renderHero={(query, setQuery) => <div className="inventoryHero"><div className="inventoryStat" onClick={()=>setQuery('')} style={{cursor:'pointer',borderColor:query===''?'var(--blue)':''} }><div className="statLabel">Digital Volumes</div><div className="statValue">{archives.length}</div></div><div className="inventoryStat" onClick={()=>setQuery('Audiobook')} style={{cursor:'pointer',borderColor:query==='Audiobook'?'var(--blue)':''} }><div className="statLabel">Audiobooks</div><div className="statValue">{archives.filter(b=>b.type === 'Audiobook').length}</div></div><div className="inventoryStat" onClick={()=>setQuery('Ebook')} style={{cursor:'pointer',borderColor:query==='Ebook'?'var(--blue)':''} }><div className="statLabel">Ebooks</div><div className="statValue">{archives.filter(b=>b.type === 'Ebook').length}</div></div></div>} /> }
@@ -131,6 +131,7 @@ function SeriesPage() {
   }, {});
 
   const [query, setQuery] = React.useState('');
+  const [expandedSeries, setExpandedSeries] = React.useState(null);
   const seriesNames = Object.keys(seriesGroups).filter(s => s.toLowerCase().includes(query.toLowerCase())).sort();
 
   return <Shell>
@@ -141,10 +142,16 @@ function SeriesPage() {
       <div className="searchBar"><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search series..." /></div>
       
       <div className="timelineBlock" style={{marginTop: '20px'}}>
-        {seriesNames.length === 0 ? <p className="pageSubtitle">No series found.</p> : seriesNames.map(s => (
-          <div key={s} style={{marginBottom: "32px"}}>
-            <h3 style={{marginBottom: "12px", borderBottom: '1px solid var(--line)', paddingBottom: '8px', fontSize: '24px'}}>{s}</h3>
-            <div className="detailList">
+        {seriesNames.length === 0 ? <p className="pageSubtitle">No series found.</p> : seriesNames.map(s => {
+          const isExpanded = expandedSeries === s;
+          return (
+          <div key={s} style={{marginBottom: "12px"}}>
+            <div onClick={() => setExpandedSeries(isExpanded ? null : s)} className="panel" style={{margin:0,cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <h3 style={{margin:0,fontSize:'22px',fontFamily:'Cormorant Garamond, serif',lineHeight:1}}>{s}</h3>
+              <div style={{color:'var(--muted)',fontSize:'14px'}}>{seriesGroups[s].length} Books {isExpanded ? '▼' : '▶'}</div>
+            </div>
+            {isExpanded && (
+            <div className="detailList" style={{padding:'12px 0 12px 20px', borderLeft:'2px solid var(--line)', marginLeft:'16px', marginTop:'8px'}}>
               {seriesGroups[s].sort((a,b) => {
                 const numA = parseFloat(a.seriesNumber);
                 const numB = parseFloat(b.seriesNumber);
@@ -152,8 +159,9 @@ function SeriesPage() {
                 return a.title.localeCompare(b.title);
               }).map(item => <BookCard key={item.id} item={item} />)}
             </div>
+            )}
           </div>
-        ))}
+        )})}
       </div>
     </div>
   </Shell>

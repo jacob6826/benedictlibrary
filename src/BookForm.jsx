@@ -49,7 +49,14 @@ export default function BookForm() {
   const [showOtherLocation, setShowOtherLocation] = useState(false);
   const [saveNewLocation, setSaveNewLocation] = useState(true);
 
+  const [customSeries, setCustomSeries] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('benedict_series')) || []; } catch(e) { return []; }
+  });
+  const [showOtherSeries, setShowOtherSeries] = useState(false);
+  const [saveNewSeries, setSaveNewSeries] = useState(true);
+
   const allLocations = Array.from(new Set(['Living Room Shelf', 'Office', 'Bedroom', ...customLocations]));
+  const allSeries = Array.from(new Set([...customSeries])).sort();
 
   useEffect(() => {
     if (id) {
@@ -62,6 +69,9 @@ export default function BookForm() {
           });
           if (data.location && !allLocations.includes(data.location)) {
             setShowOtherLocation(true);
+          }
+          if (data.series && !allSeries.includes(data.series)) {
+            setShowOtherSeries(true);
           }
         }
         setLoading(false);
@@ -134,6 +144,11 @@ export default function BookForm() {
       setCustomLocations(newLocations);
       localStorage.setItem('benedict_locations', JSON.stringify(newLocations));
     }
+    if (showOtherSeries && saveNewSeries && formData.series && !allSeries.includes(formData.series)) {
+      const newSeriesList = [...customSeries, formData.series];
+      setCustomSeries(newSeriesList);
+      localStorage.setItem('benedict_series', JSON.stringify(newSeriesList));
+    }
     const dataToSave = {
       ...formData,
       tags: formData.tags.split(',').map(t => t.trim()).filter(t => t)
@@ -182,7 +197,28 @@ export default function BookForm() {
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '15px' }}>
               <div className="searchBar" style={{ margin: 0 }}>
                 <label style={{display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)'}}>Series (Optional)</label>
-                <input name="series" value={formData.series || ''} onChange={handleChange} placeholder="e.g. The Lord of the Rings" />
+                <select value={showOtherSeries || (formData.series && !allSeries.includes(formData.series)) ? 'Other...' : (formData.series || '')} onChange={(e) => { 
+                  if (e.target.value === 'Other...') { 
+                    setShowOtherSeries(true); 
+                    if (allSeries.includes(formData.series)) setFormData(prev => ({...prev, series: ''})); 
+                  } else { 
+                    setShowOtherSeries(false); 
+                    setFormData(prev => ({...prev, series: e.target.value})); 
+                  } 
+                }} style={{ width: '100%', border: '1px solid var(--line)', background: '#fffaf6', borderRadius: '999px', padding: '12px 16px', font: 'inherit', color: 'var(--ink)', marginBottom: showOtherSeries ? '8px' : 0 }}>
+                  <option value="">None</option>
+                  {allSeries.map(s => <option key={s} value={s}>{s}</option>)}
+                  <option value="Other...">Other...</option>
+                </select>
+                {showOtherSeries && (
+                  <>
+                    <input name="series" value={formData.series} onChange={handleChange} placeholder="Enter series name..." style={{ marginTop: '8px' }} />
+                    <label style={{display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px', fontSize: '11px', color: 'var(--muted)'}}>
+                      <input type="checkbox" checked={saveNewSeries} onChange={(e) => setSaveNewSeries(e.target.checked)} />
+                      Save this series to dropdown options
+                    </label>
+                  </>
+                )}
               </div>
               <div className="searchBar" style={{ margin: 0 }}>
                 <label style={{display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)'}}>Series #</label>
