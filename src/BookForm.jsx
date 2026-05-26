@@ -36,7 +36,11 @@ const defaultBook = {
   reading: '',
   ownership: '',
   coverUrl: '',
-  isbn: ''
+  isbn: '',
+  borrower: '',
+  lentAt: '',
+  dueAt: '',
+  loans: []
 };
 
 export default function BookForm() {
@@ -58,6 +62,14 @@ export default function BookForm() {
 
   const allSeries = Array.from(new Set(
     allBooks.map(b => b.series).filter(Boolean)
+  )).sort();
+
+  const allBorrowers = Array.from(new Set(
+    allBooks.flatMap(b => {
+      const active = b.borrower ? [b.borrower] : [];
+      const past = Array.isArray(b.loans) ? b.loans.map(l => l.borrower) : [];
+      return [...active, ...past];
+    }).filter(Boolean)
   )).sort();
 
   useEffect(() => {
@@ -146,15 +158,29 @@ export default function BookForm() {
       if (name === 'status' && value === 'Queue') {
         next.inQueue = true;
       }
+      if (name === 'status' && value === 'On Loan') {
+        if (!next.lentAt) {
+          next.lentAt = new Date().toISOString().split('T')[0];
+        }
+      }
       return next;
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Clean up lending fields if the book is not active On Loan
+    const cleanedFormData = { ...formData };
+    if (cleanedFormData.status !== 'On Loan') {
+      cleanedFormData.borrower = '';
+      cleanedFormData.lentAt = '';
+      cleanedFormData.dueAt = '';
+    }
+
     const dataToSave = {
-      ...formData,
-      tags: formData.tags.split(',').map(t => t.trim()).filter(t => t)
+      ...cleanedFormData,
+      tags: cleanedFormData.tags.split(',').map(t => t.trim()).filter(t => t)
     };
 
     if (id) {
@@ -247,6 +273,32 @@ export default function BookForm() {
                 </select>
               </div>
             </div>
+            
+            {formData.status === 'On Loan' && (
+              <div className="panel" style={{ display: 'grid', gap: '15px', background: '#fffcf7', border: '1px solid #d8c6ad', padding: '16px', borderRadius: '12px', marginTop: '10px' }}>
+                <h4 style={{ margin: 0, fontFamily: 'Cormorant Garamond, serif', fontSize: '18px', color: 'var(--blue)' }}>Lending Registry Details</h4>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                  <div className="searchBar" style={{ margin: 0 }}>
+                    <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)' }}>Borrower Name</label>
+                    <input name="borrower" value={formData.borrower || ''} onChange={handleChange} list="borrowers-list" required placeholder="Who is borrowing this book?" />
+                    <datalist id="borrowers-list">
+                      {allBorrowers.map(b => <option key={b} value={b} />)}
+                    </datalist>
+                  </div>
+
+                  <div className="searchBar" style={{ margin: 0 }}>
+                    <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)' }}>Date Lent</label>
+                    <input type="date" name="lentAt" value={formData.lentAt || ''} onChange={handleChange} required style={{ width: '100%', border: '1px solid var(--line)', background: '#fffaf6', borderRadius: '999px', padding: '12px 16px', font: 'inherit', color: 'var(--ink)' }} />
+                  </div>
+                </div>
+
+                <div className="searchBar" style={{ margin: 0 }}>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)' }}>Date Due (Optional)</label>
+                  <input type="date" name="dueAt" value={formData.dueAt || ''} onChange={handleChange} style={{ width: '100%', border: '1px solid var(--line)', background: '#fffaf6', borderRadius: '999px', padding: '12px 16px', font: 'inherit', color: 'var(--ink)' }} />
+                </div>
+              </div>
+            )}
 
             <div className="searchBar" style={{ margin: 0 }}>
               <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '12px 16px', border: '1px solid var(--line)', borderRadius: '14px', background: formData.inQueue ? '#eef4fd' : '#fffaf3', transition: 'background 0.2s'}}>
