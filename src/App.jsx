@@ -20,10 +20,7 @@ function BookCover({ label, small, muted, coverUrl }) {
   if (coverUrl) return <img src={coverUrl} alt={label} className={`bookCover ${small ? 'small' : ''} ${muted ? 'mutedCover' : ''}`} style={{ objectFit: 'cover', padding: 0, border: '1px solid #c7b8a4' }} />;
   return <div className={`bookCover ${small ? 'small' : ''} ${muted ? 'mutedCover' : ''}`}>{label}</div>;
 }
-<<<<<<< HEAD
 
-=======
->>>>>>> cd571a893f2bcb5138e20382ac87601de37d792d
 export function Header() { 
   const [isDark, setIsDark] = React.useState(document.body.classList.contains('dark-mode'));
   
@@ -41,11 +38,7 @@ export function Header() {
 
   const handleLogout = () => { if (auth.currentUser) signOut(auth); };
   return (
-<<<<<<< HEAD
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', position: 'relative', padding: '10px 0 16px' }}>
-=======
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
->>>>>>> cd571a893f2bcb5138e20382ac87601de37d792d
       <button 
         onClick={toggleTheme} 
         title="Toggle Theme" 
@@ -53,7 +46,6 @@ export function Header() {
       >
         {isDark ? '☀️' : '🌙'}
       </button>
-<<<<<<< HEAD
 
       {/* 1. Shield Logo SVG at the very top */}
       <svg width="56" height="42" viewBox="0 0 100 80" fill="none" className="headerCrest" style={{ color: 'var(--blue)', marginBottom: '10px' }}>
@@ -72,9 +64,6 @@ export function Header() {
 
       {/* 2. Benedict Library title with the ornaments extending left/right */}
       <div className="titleRow" style={{ margin: '0' }}>
-=======
-      <div className="titleRow">
->>>>>>> cd571a893f2bcb5138e20382ac87601de37d792d
         <span className="ornament" />
         <h1>Benedict Library</h1>
         <span className="ornament" />
@@ -84,15 +73,9 @@ export function Header() {
       <div className="studyKicker" style={{ marginTop: '6px' }}>Private Library</div>
 
       {auth.currentUser && (
-<<<<<<< HEAD
         <div style={{ display: 'flex', gap: '10px', marginTop: '12px', marginBottom: '8px', alignItems: 'center' }}>
           <Link to="/add-book" className="primaryBtn" style={{ cursor: 'pointer', fontSize: '10px', padding: '0 10px', border: 'none', display: 'inline-flex', alignItems: 'center', height: '22px', lineHeight: '1' }}>+ Add Book</Link>
           <button onClick={handleLogout} className="backLink" style={{ cursor: 'pointer', fontSize: '10px', padding: '0 10px', background: 'transparent', color: 'var(--muted)', border: '1px solid var(--line)', display: 'inline-flex', alignItems: 'center', height: '22px', lineHeight: '1' }}>Log Out</button>
-=======
-        <div style={{ display: 'flex', gap: '10px', marginTop: '-10px', marginBottom: '16px' }}>
-          <Link to="/add-book" className="primaryBtn" style={{ cursor: 'pointer', fontSize: '10px', padding: '4px 10px', border: 'none' }}>+ Add Book</Link>
-          <button onClick={handleLogout} className="backLink" style={{ cursor: 'pointer', fontSize: '10px', padding: '4px 10px', background: 'transparent', color: 'var(--muted)', border: '1px solid var(--line)' }}>Log Out</button>
->>>>>>> cd571a893f2bcb5138e20382ac87601de37d792d
         </div>
       )}
     </div>
@@ -134,13 +117,8 @@ function Home() {
             <span>Progress: <strong>{currentlyReading.currentPage}</strong> of <strong>{currentlyReading.totalPages}</strong> pages</span>
             <strong>{progressPct}%</strong>
           </div>
-<<<<<<< HEAD
           <div className="progressBarBg" style={{ height: '8px', borderRadius: '4px', overflow: 'hidden' }}>
             <div className="progressBarFill" style={{ width: `${progressPct}%`, height: '100%', borderRadius: '4px', transition: 'width 0.5s ease' }} />
-=======
-          <div className="progressContainer mainProgress">
-            <div className="progressFill" style={{ width: `${progressPct}%` }} />
->>>>>>> cd571a893f2bcb5138e20382ac87601de37d792d
           </div>
         </div>
       )}
@@ -148,19 +126,11 @@ function Home() {
       <p>{currentlyReading ? (currentlyReading.reading || 'No active reading progress logged.') : 'No active reading progress logged.'}</p>
       
       {recentSessions.length > 0 && (
-<<<<<<< HEAD
         <div className="deskReflections" style={{ marginTop: '16px', paddingTop: '12px', maxWidth: '400px' }}>
           <div className="reflectionTitle" style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: '8px', fontFamily: 'Inter, sans-serif', fontWeight: 'bold' }}>Active Reflections:</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {recentSessions.map((s, idx) => (
               <div key={idx} className="reflectionText" style={{ fontSize: '12px', fontStyle: 'italic', lineHeight: '1.4' }}>
-=======
-        <div className="reflectionsSection" style={{ marginTop: '16px', paddingTop: '12px', maxWidth: '400px' }}>
-          <div className="reflectionsTitle" style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: '8px', fontFamily: 'Inter, sans-serif', fontWeight: 'bold' }}>Active Reflections:</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {recentSessions.map((s, idx) => (
-              <div key={idx} className="reflectionEntry" style={{ fontSize: '12px', fontStyle: 'italic', lineHeight: '1.4' }}>
->>>>>>> cd571a893f2bcb5138e20382ac87601de37d792d
                 <strong>p. {s.page}</strong> ({new Date(s.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}): "{s.notes}"
               </div>
             ))}
@@ -186,7 +156,6 @@ function BookCard({ item }) {
   if (item.status === 'Currently Reading' && !isNaN(cur) && !isNaN(tot) && tot > 0) {
     const pct = Math.min(100, Math.max(0, Math.round((cur / tot) * 100)));
     cardProgress = (
-<<<<<<< HEAD
       <div style={{ marginTop: '8px', width: '100%', maxWidth: '200px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: 'var(--muted)', marginBottom: '2px', fontFamily: 'Inter, sans-serif' }}>
           <span>Reading Progress</span>
@@ -195,10 +164,6 @@ function BookCard({ item }) {
         <div className="progressBarBg" style={{ height: '4px', borderRadius: '2px', overflow: 'hidden', borderWidth: 0 }}>
           <div className="progressBarFill" style={{ width: `${pct}%`, height: '100%' }} />
         </div>
-=======
-      <div className="progressContainer cardProgress">
-        <div className="progressFill cardFill" style={{ width: `${pct}%` }} />
->>>>>>> cd571a893f2bcb5138e20382ac87601de37d792d
       </div>
     );
   }
@@ -454,22 +419,13 @@ function BookPage() {
 
   return <Shell><div className="pageView"><button type="button" className="backLink" onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'var(--blue)' }}>{backLabel}</button><div className="bookHero"><BookCover label={decoded || 'Book'} coverUrl={item.coverUrl} /><div className="bookHeroText"><div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'10px'}}><h2 className="pageTitle" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', margin: 0 }}>{decoded} {item.rating > 0 && <span style={{ color: '#dca842', fontSize: '20px', letterSpacing: '1px' }}>{'★'.repeat(item.rating)}{'☆'.repeat(7 - item.rating)}</span>}</h2><div style={{display:'flex',gap:'10px',flexWrap:'wrap'}}>{item.status === 'Currently Reading' && <button onClick={handleFinish} className="primaryBtn" style={{padding:'4px 10px',fontSize:'10px',height:'fit-content',alignSelf:'center',border:'none',cursor:'pointer'}}>Finish Book</button>}{item.status === 'On Loan' && <button onClick={handleReturn} className="primaryBtn" style={{padding:'4px 10px',fontSize:'10px',height:'fit-content',alignSelf:'center',backgroundColor:'#a05252',border:'none',cursor:'pointer'}}>Return Book</button>}{item.status === 'Wishlist' && <button onClick={handleAcquire} className="primaryBtn" style={{padding:'4px 10px',fontSize:'10px',height:'fit-content',alignSelf:'center',backgroundColor:'#4a8a52',border:'none',cursor:'pointer'}}>Acquire Book</button>}{item.finishedAt && <button onClick={() => setShowExLibris(true)} className="primaryBtn" style={{padding:'4px 10px',fontSize:'10px',height:'fit-content',alignSelf:'center',backgroundColor:'#b79f7b',border:'none',cursor:'pointer'}}>Ex Libris Card</button>}{item.id && <Link to={`/edit-book/${item.id}`} className="backLink" style={{alignSelf:'center',marginBottom:0}}>Edit</Link>}</div></div><div className="author bookHeroAuthor">{item.author}</div>{item.series && <div style={{marginBottom:'8px',fontSize:'14px',color:'var(--blue)',fontStyle:'italic'}}><strong>{item.series}</strong> {item.seriesNumber ? `· Book ${item.seriesNumber}` : ''}</div>}<div className="tags"><span>{item.status}</span><span>{item.location || 'Unassigned'}</span>{item.status === 'Wishlist' && item.price && <span className="tag-wishlist-detail" style={{fontWeight:'bold'}}>Price: {item.price}</span>}{item.status === 'Wishlist' && item.purchaseUrl && <a href={item.purchaseUrl} target="_blank" rel="noopener noreferrer" className="purchase-link" style={{textDecoration:'underline'}}>Purchase Link</a>}</div><div className="bookMetaGrid"><div><span>Status</span><strong>{item.status}</strong></div><div><span>Location</span><strong>{item.location || 'Unassigned'}</strong></div><div><span>Cataloged</span><strong>{item.cataloged}</strong></div></div>
             {hasProgress && (
-<<<<<<< HEAD
               <div className="bookProgressBlock" style={{ marginTop: '16px', padding: '12px 14px', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-=======
-              <div className="progressWrapper" style={{ marginTop: '16px', padding: '12px 14px', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
->>>>>>> cd571a893f2bcb5138e20382ac87601de37d792d
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', color: 'var(--ink)' }}>
                   <span>Reading Progress: <strong>{item.currentPage}</strong> of <strong>{item.totalPages}</strong> pages</span>
                   <strong style={{ color: 'var(--blue)' }}>{progressPct}%</strong>
                 </div>
-<<<<<<< HEAD
                 <div className="progressBarBg" style={{ height: '10px', borderRadius: '5px', overflow: 'hidden' }}>
                   <div className="progressBarFill" style={{ width: `${progressPct}%`, height: '100%', transition: 'width 0.4s ease' }} />
-=======
-                <div className="progressContainer detailProgress">
-                  <div className="progressFill detailFill" style={{ width: `${progressPct}%` }} />
->>>>>>> cd571a893f2bcb5138e20382ac87601de37d792d
                 </div>
               </div>
             )}

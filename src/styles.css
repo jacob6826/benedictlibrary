@@ -23,7 +23,6 @@
   .pageView > div[style*="justify-content: space-between"] > div { flex-wrap: wrap; }
 }
 
-<<<<<<< HEAD
 /* Scriptorium Header and Theme Layout Enhancements */
 .headerCrest {
   transition: transform 0.3s ease, filter 0.3s ease;
@@ -61,27 +60,16 @@
 }
 
 /* Premium Brand Charcoal & Navy Dark Mode */
-=======
-/* Brand Slate Navy & Charcoal Dark Mode */
->>>>>>> cd571a893f2bcb5138e20382ac87601de37d792d
 body.dark-mode {
   --bg: #141619;
   --ink: #e2e4e9;
   --muted: #8a92a3;
-<<<<<<< HEAD
   --blue: #8ea6d2; /* High-readability brand navy in dark mode */
-=======
-  --blue: #5b73a2;
->>>>>>> cd571a893f2bcb5138e20382ac87601de37d792d
   --line: #2d3139;
   --cream: #1b1e22;
   background: linear-gradient(180deg, #101214 0%, #141619 100%) !important;
   color: var(--ink) !important;
 }
-<<<<<<< HEAD
-
-=======
->>>>>>> cd571a893f2bcb5138e20382ac87601de37d792d
 body.dark-mode .panel, 
 body.dark-mode .detailCard, 
 body.dark-mode .departureCard, 
@@ -92,76 +80,40 @@ body.dark-mode .bookDetailSection {
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.02), 0 8px 20px rgba(0,0,0,0.4) !important;
   border-color: var(--line) !important;
 }
-<<<<<<< HEAD
-
-=======
->>>>>>> cd571a893f2bcb5138e20382ac87601de37d792d
 body.dark-mode .plaque {
   background: linear-gradient(180deg, #242a36, #1c212b) !important;
   border-color: #3b4456 !important;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -6px 10px rgba(0,0,0,0.3) !important;
 }
-<<<<<<< HEAD
-
-=======
->>>>>>> cd571a893f2bcb5138e20382ac87601de37d792d
 body.dark-mode .count,
 body.dark-mode .plaque p {
   color: #e2e4e9 !important;
 }
-<<<<<<< HEAD
-
 body.dark-mode .plaque h3 {
   color: #8ea6d2 !important;
 }
-
-=======
-body.dark-mode .plaque h3 {
-  color: #8ea6d2 !important;
-}
->>>>>>> cd571a893f2bcb5138e20382ac87601de37d792d
 body.dark-mode .bookCard {
   background: #181b1f !important;
   border-color: var(--line) !important;
 }
-<<<<<<< HEAD
-
-=======
->>>>>>> cd571a893f2bcb5138e20382ac87601de37d792d
 body.dark-mode .tags span {
   background: #1a1e24 !important;
   border-color: #2b3342 !important;
   color: #8ea6d2 !important;
 }
-<<<<<<< HEAD
-
-=======
->>>>>>> cd571a893f2bcb5138e20382ac87601de37d792d
 body.dark-mode .primaryBtn,
 body.dark-mode a.backLink {
   background: var(--blue) !important;
   color: #ffffff !important;
 }
-<<<<<<< HEAD
-
-=======
->>>>>>> cd571a893f2bcb5138e20382ac87601de37d792d
 body.dark-mode .primaryBtn:hover,
 body.dark-mode a.backLink:hover {
   background: #6a82b3 !important;
   box-shadow: 0 0 12px rgba(91, 115, 166, 0.3) !important;
 }
-<<<<<<< HEAD
-
 body.dark-mode .backLink {
   color: #8ea6d2 !important;
 }
-
-=======
-body.dark-mode .backLink {
-  color: #8ea6d2 !important;
-}
->>>>>>> cd571a893f2bcb5138e20382ac87601de37d792d
 body.dark-mode input, 
 body.dark-mode textarea, 
 body.dark-mode select {
@@ -169,18 +121,12 @@ body.dark-mode select {
   border-color: #2d3139 !important;
   color: #e2e4e9 !important;
 }
-<<<<<<< HEAD
-
-=======
->>>>>>> cd571a893f2bcb5138e20382ac87601de37d792d
 body.dark-mode input:focus, 
 body.dark-mode textarea:focus, 
 body.dark-mode select:focus {
   border-color: var(--blue) !important;
   box-shadow: 0 0 0 3px rgba(91, 115, 166, 0.2) !important;
 }
-<<<<<<< HEAD
-
 body.dark-mode .titleRow h1 {
   color: #8ea6d2 !important;
   background: linear-gradient(135deg, #b8ceff 0%, #5b73a2 50%, #b8ceff 100%) !important;
@@ -257,260 +203,3 @@ body.dark-mode .bookProgressBlock {
   background: #1b1e22 !important;
   border-color: #2d3139 !important;
 }
-
-=======
-body.dark-mode .titleRow h1 {
-  color: #8ea6d2 !important;
-  text-shadow: 0 0 12px rgba(142, 166, 210, 0.15) !important;
-}
-body.dark-mode .ornament {
-  background: linear-gradient(90deg, transparent, #8ea6d2) !important;
-}
-body.dark-mode .ornament:last-child {
-  background: linear-gradient(90deg, #8ea6d2, transparent) !important;
-}
-body.dark-mode .kicker {
-  color: #8ea6d2 !important;
-}
-body.dark-mode .ledgerStats div {
-  background: #181b1f !important;
-  border-color: var(--line) !important;
-}
-body.dark-mode .ledgerStats strong {
-  color: #8ea6d2 !important;
-}
-body.dark-mode .footerLinks a {
-  color: var(--muted) !important;
-}
-body.dark-mode .footerLinks a:hover {
-  color: #8ea6d2 !important;
-}
-body.dark-mode .mini .caption {
-  color: var(--muted) !important;
-}
-body.dark-mode .mini div[class*="bookCover"] {
-  border-color: var(--line) !important;
-}
-body.dark-mode button[style*="background: transparent"] {
-  border-color: var(--line) !important;
-  color: var(--muted) !important;
-}
-body.dark-mode .detailCard:hover {
-  border-color: #8ea6d2 !important;
-}
-body.dark-mode div[style*="background: radial-gradient(rgba(0,0,0,0.02)"] {
-  background-color: #fdfbf7 !important;
-}
-
-/* Custom Tag and Element Styling */
-.tag-loan {
-  background-color: #fff0eb;
-  border: 1px solid #ffcbb3;
-  color: #b34700;
-  font-size: 10px;
-  padding: 4px 8px;
-  border-radius: 999px;
-  display: inline-block;
-}
-body.dark-mode .tag-loan {
-  background-color: #3d241d !important;
-  border-color: #5c3527 !important;
-  color: #ff9e7d !important;
-}
-
-.tag-wishlist {
-  background-color: #f0f7ff;
-  border: 1px solid #cce3ff;
-  color: #0052cc;
-  font-size: 10px;
-  padding: 4px 8px;
-  border-radius: 999px;
-  display: inline-block;
-}
-body.dark-mode .tag-wishlist {
-  background-color: #1a2b4c !important;
-  border-color: #2b457a !important;
-  color: #8ea6d2 !important;
-}
-
-.tag-series {
-  background-color: #e8ebf2;
-  border: 1px solid #c1c9dd;
-  color: #4a5d85;
-  font-size: 10px;
-  padding: 4px 8px;
-  border-radius: 999px;
-  display: inline-block;
-}
-body.dark-mode .tag-series {
-  background-color: #212836 !important;
-  border-color: #35425c !important;
-  color: #8ea6d2 !important;
-}
-
-.tag-wishlist-detail {
-  background-color: #fff8ef;
-  border: 1px solid #d8ccb8;
-  color: var(--ink);
-  font-size: 11px;
-  padding: 5px 9px;
-  border-radius: 999px;
-  display: inline-block;
-}
-body.dark-mode .tag-wishlist-detail {
-  background-color: #1a2b4c !important;
-  border-color: #2b457a !important;
-  color: var(--ink) !important;
-}
-
-.purchase-link {
-  font-size: 10px;
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: #efe4d0;
-  border: 1px solid #d8c6ad;
-  color: var(--blue);
-  display: inline-block;
-}
-body.dark-mode .purchase-link {
-  background: #1a1e24 !important;
-  border-color: #2b3342 !important;
-  color: #8ea6d2 !important;
-}
-
-.loanStatusBox {
-  background: #fff0eb;
-  border: 1px solid #ffcbb3;
-  color: #b34700;
-}
-body.dark-mode .loanStatusBox {
-  background: #3d241d !important;
-  border-color: #5c3527 !important;
-  color: #ff9e7d !important;
-}
-
-.quoteCard {
-  background: #fdfbfa;
-  border: 1px solid var(--line);
-}
-body.dark-mode .quoteCard {
-  background: #15181c !important;
-  border-color: #2d3139 !important;
-}
-
-.sessionCard {
-  background: #fdfcf9;
-  border: 1px solid var(--line);
-}
-body.dark-mode .sessionCard {
-  background: #15181c !important;
-  border-color: #2d3139 !important;
-  border-left-color: #8ea6d2 !important;
-}
-
-.progressWrapper {
-  background: #fffcf7;
-  border: 1px solid #dcd1be;
-}
-body.dark-mode .progressWrapper {
-  background: #1a1e24 !important;
-  border-color: #2d3139 !important;
-}
-
-/* Subject tags on Insights */
-.subjectTag {
-  background: #efe4d0;
-  color: #6d5d48;
-}
-body.dark-mode .subjectTag {
-  background: #1a1e24 !important;
-  color: #8ea6d2 !important;
-}
-
-/* Active Reflections styles */
-.reflectionsSection {
-  border-top: 1px dashed #d8c6ad;
-}
-body.dark-mode .reflectionsSection {
-  border-top-color: var(--line) !important;
-}
-.reflectionsTitle {
-  color: #b79f7b;
-}
-body.dark-mode .reflectionsTitle {
-  color: #8ea6d2 !important;
-}
-.reflectionEntry {
-  color: #5c4e43;
-}
-body.dark-mode .reflectionEntry {
-  color: #e2e4e9 !important;
-}
-
-/* Unified Progress Bar System */
-.progressContainer {
-  background: #efe4d0;
-  border: 1px solid #dcd1be;
-  border-radius: 4px;
-  overflow: hidden;
-}
-.mainProgress {
-  height: 8px;
-  margin: 14px 0;
-  max-width: 360px;
-}
-.detailProgress {
-  height: 10px;
-  border-radius: 5px;
-  border-color: #d3c4ad;
-}
-.cardProgress {
-  height: 4px;
-  border-radius: 2px;
-  border: none;
-  margin-top: 8px;
-  max-width: 200px;
-}
-.progressFill {
-  height: 100%;
-  background: linear-gradient(90deg, #dca842, #b79f7b);
-  border-radius: 4px;
-  transition: width 0.5s ease;
-}
-.cardFill {
-  background: #dca842;
-  border-radius: 2px;
-}
-.detailFill {
-  transition: width 0.4s ease;
-}
-
-/* Dark Mode overrides for Progress Bars */
-body.dark-mode .progressContainer {
-  background: #242933 !important;
-  border-color: #2d3139 !important;
-}
-body.dark-mode .progressFill {
-  background: linear-gradient(90deg, #4f648f, #8ea6d2) !important;
-}
-body.dark-mode .cardFill {
-  background: #8ea6d2 !important;
-}
-
-/* Additional layout overrides */
-body.dark-mode .inventoryStat,
-body.dark-mode .bookMetaGrid div {
-  background: linear-gradient(180deg, #1b1e23, #16191c) !important;
-  border-color: var(--line) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02), 0 8px 20px rgba(0,0,0,0.4) !important;
-}
-body.dark-mode .pageStub {
-  background: #181b1f !important;
-  border-color: var(--line) !important;
-}
-body.dark-mode .panelPill {
-  background: #1a1e24 !important;
-  border-color: #2b3342 !important;
-  color: #8ea6d2 !important;
-}
->>>>>>> cd571a893f2bcb5138e20382ac87601de37d792d
