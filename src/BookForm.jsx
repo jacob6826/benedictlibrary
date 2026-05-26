@@ -40,7 +40,14 @@ const defaultBook = {
   borrower: '',
   lentAt: '',
   dueAt: '',
-  loans: []
+  loans: [],
+  rating: 0,
+  price: '',
+  purchaseUrl: '',
+  quotes: [],
+  currentPage: '',
+  totalPages: '',
+  readingSessions: []
 };
 
 export default function BookForm() {
@@ -83,6 +90,13 @@ export default function BookForm() {
             data.inQueue = true;
           }
           setFormData({
+            rating: 0,
+            price: '',
+            purchaseUrl: '',
+            quotes: [],
+            currentPage: '',
+            totalPages: '',
+            readingSessions: [],
             ...data,
             tags: Array.isArray(data.tags) ? data.tags.join(', ') : ''
           });
@@ -170,16 +184,22 @@ export default function BookForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Clean up lending fields if the book is not active On Loan
+    // Clean up lending and wishlist fields if the book is not active in those states
     const cleanedFormData = { ...formData };
     if (cleanedFormData.status !== 'On Loan') {
       cleanedFormData.borrower = '';
       cleanedFormData.lentAt = '';
       cleanedFormData.dueAt = '';
     }
+    if (cleanedFormData.status !== 'Wishlist') {
+      cleanedFormData.price = '';
+      cleanedFormData.purchaseUrl = '';
+    }
 
     const dataToSave = {
       ...cleanedFormData,
+      currentPage: cleanedFormData.currentPage === '' ? '' : parseInt(cleanedFormData.currentPage, 10),
+      totalPages: cleanedFormData.totalPages === '' ? '' : parseInt(cleanedFormData.totalPages, 10),
       tags: cleanedFormData.tags.split(',').map(t => t.trim()).filter(t => t)
     };
 
@@ -223,6 +243,30 @@ export default function BookForm() {
               <input name="isbn" value={formData.isbn || ''} onChange={handleChange} placeholder="e.g. 9780143127550" />
             </div>
 
+            <div className="searchBar" style={{ margin: 0 }}>
+              <label style={{display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)'}}>Rating</label>
+              <div style={{ display: 'flex', gap: '6px', fontSize: '24px', cursor: 'pointer', color: '#efe4d0', userSelect: 'none' }}>
+                {[1, 2, 3, 4, 5, 6, 7].map(star => (
+                  <span 
+                    key={star} 
+                    onClick={() => setFormData(prev => ({ ...prev, rating: star }))} 
+                    style={{ color: star <= formData.rating ? '#dca842' : '#efe4d0', transition: 'color 0.2s' }}
+                  >
+                    ★
+                  </span>
+                ))}
+                {formData.rating > 0 && (
+                  <button 
+                    type="button" 
+                    onClick={() => setFormData(prev => ({ ...prev, rating: 0 }))} 
+                    style={{ background: 'transparent', border: 'none', color: 'var(--muted)', fontSize: '11px', alignSelf: 'center', marginLeft: '10px', cursor: 'pointer', fontFamily: 'inherit' }}
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            </div>
+
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '15px' }}>
               <div className="searchBar" style={{ margin: 0 }}>
                 <label style={{display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)'}}>Series (Optional)</label>
@@ -264,6 +308,7 @@ export default function BookForm() {
                 <select name="status" value={formData.status} onChange={handleChange} style={{ width: '100%', border: '1px solid var(--line)', background: '#fffaf6', borderRadius: '999px', padding: '12px 16px', font: 'inherit', color: 'var(--ink)' }}>
                   <option>Owned</option>
                   <option>Queue</option>
+                  <option>Wishlist</option>
                   <option>Borrowed</option>
                   <option>On Loan</option>
                   <option>Currently Reading</option>
@@ -274,6 +319,22 @@ export default function BookForm() {
               </div>
             </div>
             
+            {formData.status === 'Wishlist' && (
+              <div className="panel" style={{ display: 'grid', gap: '15px', background: '#fffcf7', border: '1px solid #d8c6ad', padding: '16px', borderRadius: '12px', marginTop: '10px' }}>
+                <h4 style={{ margin: 0, fontFamily: 'Cormorant Garamond, serif', fontSize: '18px', color: 'var(--blue)' }}>Acquisition Details (Wishlist)</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '15px' }}>
+                  <div className="searchBar" style={{ margin: 0 }}>
+                    <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)' }}>Planned Price</label>
+                    <input name="price" value={formData.price || ''} onChange={handleChange} placeholder="e.g. $19.99" />
+                  </div>
+                  <div className="searchBar" style={{ margin: 0 }}>
+                    <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)' }}>Purchase URL (Optional)</label>
+                    <input name="purchaseUrl" value={formData.purchaseUrl || ''} onChange={handleChange} placeholder="e.g. https://..." />
+                  </div>
+                </div>
+              </div>
+            )}
+
             {formData.status === 'On Loan' && (
               <div className="panel" style={{ display: 'grid', gap: '15px', background: '#fffcf7', border: '1px solid #d8c6ad', padding: '16px', borderRadius: '12px', marginTop: '10px' }}>
                 <h4 style={{ margin: 0, fontFamily: 'Cormorant Garamond, serif', fontSize: '18px', color: 'var(--blue)' }}>Lending Registry Details</h4>
@@ -330,6 +391,17 @@ export default function BookForm() {
             <div className="searchBar" style={{ margin: 0 }}>
               <label style={{display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)'}}>Cataloged Date</label>
               <input name="cataloged" value={formData.cataloged} onChange={handleChange} />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+              <div className="searchBar" style={{ margin: 0 }}>
+                <label style={{display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)'}}>Current Page</label>
+                <input type="number" name="currentPage" value={formData.currentPage ?? ''} onChange={handleChange} placeholder="e.g. 142" min="0" style={{ width: '100%', border: '1px solid var(--line)', background: '#fffaf6', borderRadius: '999px', padding: '12px 16px', font: 'inherit', color: 'var(--ink)' }} />
+              </div>
+              <div className="searchBar" style={{ margin: 0 }}>
+                <label style={{display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)'}}>Total Pages</label>
+                <input type="number" name="totalPages" value={formData.totalPages ?? ''} onChange={handleChange} placeholder="e.g. 400" min="1" style={{ width: '100%', border: '1px solid var(--line)', background: '#fffaf6', borderRadius: '999px', padding: '12px 16px', font: 'inherit', color: 'var(--ink)' }} />
+              </div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>

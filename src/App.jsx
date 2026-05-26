@@ -39,15 +39,85 @@ function Home() {
   const homeAnnalsGrouped = annals.reduce((acc, b) => { const y = new Date(b.finishedAt).getFullYear(); acc[y] = acc[y] || []; acc[y].push(b); return acc; }, {});
   const recentDepartures = [...departures].sort((a,b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0)).slice(0, 3);
   
+  let progressPct = 0;
+  let hasProgress = false;
+  if (currentlyReading) {
+    const cur = parseInt(currentlyReading.currentPage, 10);
+    const tot = parseInt(currentlyReading.totalPages, 10);
+    if (!isNaN(cur) && !isNaN(tot) && tot > 0) {
+      progressPct = Math.min(100, Math.max(0, Math.round((cur / tot) * 1000) / 10));
+      hasProgress = true;
+    }
+  }
+
+  const recentSessions = currentlyReading && Array.isArray(currentlyReading.readingSessions)
+    ? [...currentlyReading.readingSessions].sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0)).slice(0, 2)
+    : [];
+
   return (<Shell>
-  <section className="panel hero"><div className="heroText"><div className="kicker">On the Desk.</div><h2>{currentlyReading ? currentlyReading.title : 'Nothing currently on the desk'}</h2><p>{currentlyReading ? currentlyReading.reading : 'No active reading progress logged.'}</p></div>{currentlyReading && <Link to={`/book/${encodeURIComponent(currentlyReading.title)}`} className="primaryBtn" style={{textAlign:'center'}}>View Log</Link>}</section>
+  <section className="panel hero" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px' }}>
+    <div className="heroText" style={{ flex: '1 1 300px' }}>
+      <div className="kicker">On the Desk.</div>
+      <h2>{currentlyReading ? currentlyReading.title : 'Nothing currently on the desk'}</h2>
+      
+      {hasProgress && (
+        <div style={{ margin: '14px 0', maxWidth: '360px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#71645a', marginBottom: '4px', fontFamily: 'Inter, sans-serif' }}>
+            <span>Progress: <strong>{currentlyReading.currentPage}</strong> of <strong>{currentlyReading.totalPages}</strong> pages</span>
+            <strong>{progressPct}%</strong>
+          </div>
+          <div style={{ height: '8px', background: '#efe4d0', borderRadius: '4px', overflow: 'hidden', border: '1px solid #dcd1be' }}>
+            <div style={{ width: `${progressPct}%`, height: '100%', background: 'linear-gradient(90deg, #dca842, #b79f7b)', borderRadius: '4px', transition: 'width 0.5s ease' }} />
+          </div>
+        </div>
+      )}
+
+      <p>{currentlyReading ? (currentlyReading.reading || 'No active reading progress logged.') : 'No active reading progress logged.'}</p>
+      
+      {recentSessions.length > 0 && (
+        <div style={{ marginTop: '16px', borderTop: '1px dashed #d8c6ad', paddingTop: '12px', maxWidth: '400px' }}>
+          <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1.2px', color: '#b79f7b', marginBottom: '8px', fontFamily: 'Inter, sans-serif', fontWeight: 'bold' }}>Active Reflections:</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {recentSessions.map((s, idx) => (
+              <div key={idx} style={{ fontSize: '12px', fontStyle: 'italic', color: '#5c4e43', lineHeight: '1.4' }}>
+                <strong>p. {s.page}</strong> ({new Date(s.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}): "{s.notes}"
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+    {currentlyReading && <Link to={`/book/${encodeURIComponent(currentlyReading.title)}`} className="primaryBtn" style={{textAlign:'center', alignSelf: 'center'}}>View Log</Link>}
+  </section>
   <section className="plaqueGrid"><Link to="/stacks" className="plaque linkCard"><h3>The Stacks</h3><div className="count">{stacks.length} Physical Volumes</div><p>Active physical holdings, on shelves or on loan.</p></Link><Link to="/archives" className="plaque linkCard"><h3>The Archives</h3><div className="count">{archives.length} Digital Volumes</div><p>Cataloged ebooks and audiobooks.</p></Link></section>
   <section className="middleGrid"><Link to="/reading-ledger" className="panel linkCard"><h3>Recently Cataloged</h3>{recent.length === 0 && <p className="pageSubtitle">No recently cataloged books.</p>}<div className="coverRow">{recent.map((b) => <div key={b.id} className="mini"><BookCover label={b.title} coverUrl={b.coverUrl} small /><div className="caption">New</div></div>)}</div><h3 className="queueTitle">The Queue</h3>{queue.length === 0 && <p className="pageSubtitle">Your queue is empty.</p>}<div className="coverRow">{queue.slice(0, 5).map((b) => <div key={b.id} className="mini"><BookCover label={b.title} coverUrl={b.coverUrl} small /></div>)}</div></Link><Link to="/reading-ledger" className="panel linkCard timeline"><h3>The Annals</h3>{annals.length === 0 ? <p className="pageSubtitle">No reading history.</p> : Object.entries(homeAnnalsGrouped).sort((a,b)=>b[0]-a[0]).map(([year, books]) => <div key={year} style={{marginBottom:'12px'}}><div className="year" style={{marginBottom:'6px'}}>{year}</div>{books.map(b => <div key={b.id} className="entry" style={{marginBottom:'8px'}}>Finished {b.title} &middot; {new Date(b.finishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}</div>)}</div>)}</Link></section>
   <section className="bottomGrid"><Link to="/circulation" className="panel linkCard"><h3>The Circulation Desk</h3>{stacks.filter(b => b.status === 'On Loan').length === 0 ? <p className="pageSubtitle">No books currently on loan.</p> : stacks.filter(b => b.status === 'On Loan').map(b => <div key={b.id || b.title} className="bookCard"><BookCover label="On Loan" coverUrl={b.coverUrl} small /><div><h4>{b.title}</h4><p>{b.author}</p><div className="tags"><span style={{ backgroundColor: '#fff0eb', borderColor: '#ffcbb3', color: '#b34700' }}>On Loan to {b.borrower}</span>{b.dueAt && <span>Due {new Date(b.dueAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}</span>}</div></div></div>)}</Link><Link to="/departures" className="panel linkCard"><h3>The Ledger of Departures</h3>{recentDepartures.length === 0 && <p className="pageSubtitle">No departed books.</p>}{recentDepartures.map(d => <div key={d.title} className="bookCard"><BookCover label={d.status} coverUrl={d.coverUrl} small muted /><div><h4>{d.title}</h4><p>{d.status}</p><div className="tags"><span>Archived</span></div></div></div>)}</Link></section>
-  <footer className="footerLinks"><Link to="/circulation">Circulation List</Link><Link to="/series">The Series</Link><Link to="/catalog">Detailed Catalog</Link><Link to="/insights">Library Insights</Link><Link to="/departures">Past Departures</Link></footer>
+  <footer className="footerLinks"><Link to="/circulation">Circulation Desk</Link><Link to="/series">The Series</Link><Link to="/catalog">Catalog Ledger</Link><Link to="/insights">Library Insights</Link><Link to="/commonplace">Commonplace Book</Link><Link to="/wishlist">Wishlist Ledger</Link><Link to="/departures">Past Departures</Link></footer>
 </Shell>) }
 
-function BookCard({ item }) { const location = useLocation(); return <Link to={`/book/${encodeURIComponent(item.title)}`} state={{ from: location.pathname }} className="detailCard"><div className="detailCover"><BookCover label={item.title} coverUrl={item.coverUrl} small /></div><div className="detailMeta"><h4>{item.title}</h4><div className="author">{item.author}</div><div className="tags">{item.status === 'On Loan' && item.borrower && <span style={{ backgroundColor: '#fff0eb', borderColor: '#ffcbb3', color: '#b34700' }}>On Loan to {item.borrower}{item.dueAt ? ` (Due ${new Date(item.dueAt).toLocaleDateString('en-US', { timeZone: 'UTC' })})` : ' (No due date)'}</span>}{item.series && <span style={{backgroundColor:'#e8ebf2',borderColor:'#c1c9dd',color:'#4a5d85'}}>{item.series}{item.seriesNumber ? ` #${item.seriesNumber}` : ''}</span>}{(item.tags||[]).map(t => <span key={t}>{t}</span>)}</div></div></Link> }
+function BookCard({ item }) { 
+  const location = useLocation(); 
+  const starsString = item.rating > 0 ? <span style={{ color: '#dca842', fontWeight: 'bold', marginLeft: '6px', fontSize: '13px' }}>{'★'.repeat(item.rating)}{'☆'.repeat(7 - item.rating)}</span> : null;
+  
+  let cardProgress = null;
+  const cur = parseInt(item.currentPage, 10);
+  const tot = parseInt(item.totalPages, 10);
+  if (item.status === 'Currently Reading' && !isNaN(cur) && !isNaN(tot) && tot > 0) {
+    const pct = Math.min(100, Math.max(0, Math.round((cur / tot) * 100)));
+    cardProgress = (
+      <div style={{ marginTop: '8px', width: '100%', maxWidth: '200px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: 'var(--muted)', marginBottom: '2px', fontFamily: 'Inter, sans-serif' }}>
+          <span>Reading Progress</span>
+          <span>{pct}%</span>
+        </div>
+        <div style={{ height: '4px', background: '#efe4d0', borderRadius: '2px', overflow: 'hidden' }}>
+          <div style={{ width: `${pct}%`, height: '100%', background: '#dca842' }} />
+        </div>
+      </div>
+    );
+  }
+
+  return <Link to={`/book/${encodeURIComponent(item.title)}`} state={{ from: location.pathname }} className="detailCard"><div className="detailCover"><BookCover label={item.title} coverUrl={item.coverUrl} small /></div><div className="detailMeta"><h4 style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>{item.title} {starsString}</h4><div className="author">{item.author}</div><div className="tags">{item.status === 'On Loan' && item.borrower && <span style={{ backgroundColor: '#fff0eb', borderColor: '#ffcbb3', color: '#b34700' }}>On Loan to {item.borrower}{item.dueAt ? ` (Due ${new Date(item.dueAt).toLocaleDateString('en-US', { timeZone: 'UTC' })})` : ' (No due date)'}</span>}{item.status === 'Wishlist' && <span style={{ backgroundColor: '#f0f7ff', borderColor: '#cce3ff', color: '#0052cc' }}>Wishlist {item.price ? ` (${item.price})` : ''}</span>}{item.series && <span style={{backgroundColor:'#e8ebf2',borderColor:'#c1c9dd',color:'#4a5d85'}}>{item.series}{item.seriesNumber ? ` #${item.seriesNumber}` : ''}</span>}{(item.tags||[]).map(t => <span key={t}>{t}</span>)}</div>{cardProgress}</div></Link> }
 function InventoryPage({ title, subtitle, items, renderHero }) { const navigate = useNavigate(); const [query, setQuery] = React.useState(''); const filtered = items.filter(i => `${i.title} ${i.author} ${i.status} ${i.type} ${(i.tags||[]).join(' ')}`.toLowerCase().includes(query.toLowerCase())); return <Shell><div className="pageView"><button type="button" className="backLink" onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'var(--blue)' }}>← Back</button><h2 className="pageTitle">{title}</h2><p className="pageSubtitle">{subtitle}</p>{renderHero ? renderHero(query, setQuery) : null}<div className="searchBar"><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search titles, authors, tags..." /></div><div className="detailList">{filtered.map(item => <BookCard key={item.id} item={item} />)}</div></div></Shell> }
 function StacksPage() { const { stacks } = useLibrary(); return <InventoryPage title="The Stacks" subtitle="Physical holdings with locations, tags, and ownership details." items={stacks} renderHero={(query, setQuery) => <div className="inventoryHero"><div className="inventoryStat" onClick={()=>setQuery('')} style={{cursor:'pointer',borderColor:query===''?'var(--blue)':''} }><div className="statLabel">Physical Volumes</div><div className="statValue">{stacks.length}</div></div><div className="inventoryStat" onClick={()=>setQuery('On Loan')} style={{cursor:'pointer',borderColor:query==='On Loan'?'var(--blue)':''} }><div className="statLabel">On Loan</div><div className="statValue">{stacks.filter(b=>b.status === 'On Loan').length}</div></div><div className="inventoryStat" onClick={()=>setQuery('Signed')} style={{cursor:'pointer',borderColor:query==='Signed'?'var(--blue)':''} }><div className="statLabel">Signed</div><div className="statValue">{stacks.filter(b=>(b.tags||[]).includes('Signed')).length}</div></div></div>} /> }
 function ArchivesPage() { const { archives } = useLibrary(); return <InventoryPage title="The Archives" subtitle="Digital holdings and future local-file support." items={archives} renderHero={(query, setQuery) => <div className="inventoryHero"><div className="inventoryStat" onClick={()=>setQuery('')} style={{cursor:'pointer',borderColor:query===''?'var(--blue)':''} }><div className="statLabel">Digital Volumes</div><div className="statValue">{archives.length}</div></div><div className="inventoryStat" onClick={()=>setQuery('Audiobook')} style={{cursor:'pointer',borderColor:query==='Audiobook'?'var(--blue)':''} }><div className="statLabel">Audiobooks</div><div className="statValue">{archives.filter(b=>b.type === 'Audiobook').length}</div></div><div className="inventoryStat" onClick={()=>setQuery('Ebook')} style={{cursor:'pointer',borderColor:query==='Ebook'?'var(--blue)':''} }><div className="statLabel">Ebooks</div><div className="statValue">{archives.filter(b=>b.type === 'Ebook').length}</div></div></div>} /> }
@@ -152,14 +222,35 @@ function ReadingLedgerPage() {
   return <Shell><div className="pageView"><button type="button" className="backLink" onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'var(--blue)' }}>← Back</button><h2 className="pageTitle">The Reading Ledger</h2><p className="pageSubtitle">Queue and completed reading annals.</p><div className="ledgerGrid"><section className="ledgerPanel"><div className="panelTop"><h3>The Queue</h3><div style={{display:'flex',gap:'8px'}}>{managing ? <><button onClick={selectAll} className="primaryBtn" style={{padding:'4px 10px',fontSize:'12px',background:'var(--muted)'}}>{selected.size === queue.length ? 'Deselect All' : 'Select All'}</button><button onClick={deleteSelected} disabled={selected.size===0} className="primaryBtn" style={{padding:'4px 10px',fontSize:'12px',background:selected.size===0?'#ccc':'#c94a4a'}}>Delete ({selected.size})</button><button onClick={()=>setManaging(false)} className="primaryBtn" style={{padding:'4px 10px',fontSize:'12px',background:'transparent',color:'var(--muted)',border:'1px solid var(--muted)'}}>Done</button></> : <button onClick={()=>setManaging(true)} className="primaryBtn" style={{padding:'4px 10px',fontSize:'12px',background:'transparent',color:'var(--muted)',border:'1px solid var(--muted)'}}>Manage</button>}<div className="panelPill">{queue.length} books</div></div></div>{queue.length === 0 && <p className="pageSubtitle">Queue is empty.</p>}<div className="detailList" style={{ marginTop: '12px' }}>{queue.map((q, index) => managing ? <div key={q.id} className="detailCard" onClick={() => toggleSelect(q.id)} style={{cursor: 'pointer', transition: 'all 0.1s', opacity: !selected.has(q.id) ? 0.7 : 1, boxShadow: selected.has(q.id) ? '0 0 0 4px #c94a4a' : undefined, border: selected.has(q.id) ? '1px solid transparent' : undefined}}><div className="detailCover"><BookCover label={q.title} coverUrl={q.coverUrl} small /></div><div className="detailMeta"><h4>{q.title}</h4><div className="author">{q.author}</div><div className="tags">{(q.tags||[]).map(t => <span key={t}>{t}</span>)}</div></div></div> : <div key={q.id} className="detailCard" style={{display: 'flex', flexWrap: 'wrap', gap: '14px', alignItems: 'center', justifyContent: 'space-between'}}><div style={{display: 'flex', flexDirection: 'column', gap: '4px'}}><button onClick={() => moveQueueItem(index, 'up')} disabled={index===0} style={{border:'none',background:'transparent',cursor:index===0?'default':'pointer',color:index===0?'var(--line)':'var(--blue)',fontSize:'16px',padding:0}}>▲</button><button onClick={() => moveQueueItem(index, 'down')} disabled={index===queue.length-1} style={{border:'none',background:'transparent',cursor:index===queue.length-1?'default':'pointer',color:index===queue.length-1?'var(--line)':'var(--blue)',fontSize:'16px',padding:0}}>▼</button></div><Link to={`/book/${encodeURIComponent(q.title)}`} style={{display: 'flex', gap: '14px', flex: '1 1 180px'}}><div className="detailCover"><BookCover label={q.title} coverUrl={q.coverUrl} small /></div><div className="detailMeta"><h4 style={{color: 'var(--ink)'}}>{q.title}</h4><div className="author" style={{color: 'var(--muted)'}}>{q.author}</div><div className="tags">{q.series && <span style={{backgroundColor:'#e8ebf2',borderColor:'#c1c9dd',color:'#4a5d85'}}>{q.series}{q.seriesNumber ? ` #${q.seriesNumber}` : ''}</span>}{(q.tags||[]).map(t => <span key={t}>{t}</span>)}</div></div></Link><button onClick={async (e) => { e.preventDefault(); e.stopPropagation(); await updateDoc(doc(db, 'books', q.id), { status: 'Currently Reading', inQueue: false, startedAt: new Date().toISOString().split('T')[0] }); }} className="primaryBtn" style={{padding:'6px 12px', fontSize:'12px', background:'var(--muted)', whiteSpace: 'nowrap'}}>Read Now</button></div>)}</div><div className="ledgerStats"><div><span>Queue</span><strong>{queue.length}</strong></div><div><span>Completed</span><strong>{annals.length}</strong></div></div></section><section className="ledgerPanel annalsPanel"><div className="panelTop"><h3>The Annals</h3><div className="panelPill">Yearly timeline</div></div><div className="timelineBlock">{annals.length === 0 ? <p className="pageSubtitle">No history available.</p> : Object.entries(groupedAnnals).sort((a,b)=>b[0]-a[0]).map(([year, books]) => <div key={year} style={{marginBottom: "16px"}}><div className="year" style={{marginBottom: "8px"}}>{year}</div>{books.map(b => <div key={b.id} className="entry" style={{borderLeft: "2px solid var(--line)", paddingLeft: "10px", marginLeft: "4px", marginBottom: "8px"}}>Finished {b.title} &middot; {new Date(b.finishedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" })}</div>)}</div>)}</div></section></div></div></Shell>;
 }
 function DeparturesPage() { const navigate = useNavigate(); const { departures } = useLibrary(); return <Shell><div className="pageView"><button type="button" className="backLink" onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'var(--blue)' }}>← Back</button><h2 className="pageTitle">The Ledger of Departures</h2><p className="pageSubtitle">Books that left the collection permanently.</p><div className="departuresGrid">{departures.map(d => <div key={d.id} className="departureCard"><BookCover label={d.status} coverUrl={d.coverUrl} small muted /><div><h4>{d.title}</h4><p>{d.status}</p><div className="tags"><span>{d.status}</span><span>Archived</span></div></div></div>)}</div></div></Shell> }
-function CatalogPage() { const navigate = useNavigate(); const { allBooks } = useLibrary(); const [query, setQuery] = React.useState(''); const [typeFilter, setTypeFilter] = React.useState('All'); const [statusFilter, setStatusFilter] = React.useState('All'); const filtered = allBooks.filter(i => { const matchesQuery = `${i.title} ${i.author} ${(i.tags||[]).join(' ')}`.toLowerCase().includes(query.toLowerCase()); const matchesType = typeFilter === 'All' || i.type === typeFilter; const matchesStatus = statusFilter === 'All' || i.status === statusFilter || (statusFilter === 'Queue' && i.inQueue); return matchesQuery && matchesType && matchesStatus; }); return <Shell><div className="pageView"><button type="button" className="backLink" onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'var(--blue)' }}>← Back</button><div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><h2 className="pageTitle">Detailed Catalog</h2><div style={{display: "flex", gap: "10px"}}><GoodreadsImporter /><Link to="/add-book" className="primaryBtn">Add Book</Link></div></div><p className="pageSubtitle">A complete inventory view of the collection.</p><div className="searchBar" style={{display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '14px'}}><input style={{flex: '1 1 250px'}} value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search the full catalog..." /><select value={typeFilter} onChange={e=>setTypeFilter(e.target.value)} style={{flex: '0 1 auto', padding: '12px 16px', border: '1px solid var(--line)', borderRadius: '999px', background: '#fffaf6', font: 'inherit', color: 'var(--ink)', cursor: 'pointer', outline: 'none'}}><option value="All">All Formats</option><option value="Physical">Physical</option><option value="Ebook">Ebook</option><option value="Audiobook">Audiobook</option></select><select value={statusFilter} onChange={e=>setStatusFilter(e.target.value)} style={{flex: '0 1 auto', padding: '12px 16px', border: '1px solid var(--line)', borderRadius: '999px', background: '#fffaf6', font: 'inherit', color: 'var(--ink)', cursor: 'pointer', outline: 'none'}}><option value="All">All Statuses</option><option value="Owned">Owned</option><option value="Queue">In Queue</option><option value="Currently Reading">Currently Reading</option><option value="On Loan">On Loan</option><option value="Borrowed">Borrowed</option><option value="Sold">Sold</option><option value="Donated">Donated</option><option value="Gifted">Gifted</option></select></div><div className="detailList">{filtered.map(item => <BookCard key={item.id} item={item} />)}</div></div></Shell> }
+function CatalogPage() { 
+  const navigate = useNavigate(); 
+  const { allBooks } = useLibrary(); 
+  const [query, setQuery] = React.useState(''); 
+  const [typeFilter, setTypeFilter] = React.useState('All'); 
+  const [statusFilter, setStatusFilter] = React.useState('All'); 
+  const [ratingFilter, setRatingFilter] = React.useState('All');
+
+  const filtered = allBooks.filter(i => { 
+    const matchesQuery = `${i.title} ${i.author} ${(i.tags||[]).join(' ')}`.toLowerCase().includes(query.toLowerCase()); 
+    const matchesType = typeFilter === 'All' || i.type === typeFilter; 
+    const matchesStatus = statusFilter === 'All' || i.status === statusFilter || (statusFilter === 'Queue' && i.inQueue); 
+    const matchesRating = ratingFilter === 'All' || 
+                          (ratingFilter === '7' && i.rating === 7) ||
+                          (ratingFilter === '6+' && i.rating >= 6) ||
+                          (ratingFilter === '5+' && i.rating >= 5) ||
+                          (ratingFilter === '4+' && i.rating >= 4) ||
+                          (ratingFilter === 'Unrated' && (!i.rating || i.rating === 0));
+    return matchesQuery && matchesType && matchesStatus && matchesRating; 
+  }); 
+
+  return <Shell><div className="pageView"><button type="button" className="backLink" onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'var(--blue)' }}>← Back</button><div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><h2 className="pageTitle">Detailed Catalog</h2><div style={{display: "flex", gap: "10px"}}><GoodreadsImporter /><Link to="/add-book" className="primaryBtn">Add Book</Link></div></div><p className="pageSubtitle">A complete inventory view of the collection.</p><div className="searchBar" style={{display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '14px'}}><input style={{flex: '1 1 250px'}} value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search the full catalog..." /><select value={typeFilter} onChange={e=>setTypeFilter(e.target.value)} style={{flex: '0 1 auto', padding: '12px 16px', border: '1px solid var(--line)', borderRadius: '999px', background: '#fffaf6', font: 'inherit', color: 'var(--ink)', cursor: 'pointer', outline: 'none'}}><option value="All">All Formats</option><option value="Physical">Physical</option><option value="Ebook">Ebook</option><option value="Audiobook">Audiobook</option></select><select value={statusFilter} onChange={e=>setStatusFilter(e.target.value)} style={{flex: '0 1 auto', padding: '12px 16px', border: '1px solid var(--line)', borderRadius: '999px', background: '#fffaf6', font: 'inherit', color: 'var(--ink)', cursor: 'pointer', outline: 'none'}}><option value="All">All Statuses</option><option value="Owned">Owned</option><option value="Queue">In Queue</option><option value="Wishlist">Wishlist</option><option value="Currently Reading">Currently Reading</option><option value="On Loan">On Loan</option><option value="Borrowed">Borrowed</option><option value="Sold">Sold</option><option value="Donated">Donated</option><option value="Gifted">Gifted</option></select><select value={ratingFilter} onChange={e=>setRatingFilter(e.target.value)} style={{flex: '0 1 auto', padding: '12px 16px', border: '1px solid var(--line)', borderRadius: '999px', background: '#fffaf6', font: 'inherit', color: 'var(--ink)', cursor: 'pointer', outline: 'none'}}><option value="All">All Ratings</option><option value="7">7 Stars</option><option value="6+">6+ Stars</option><option value="5+">5+ Stars</option><option value="4+">4+ Stars</option><option value="Unrated">Unrated</option></select></div><div className="detailList">{filtered.map(item => <BookCard key={item.id} item={item} />)}</div></div></Shell> }
 function BookPage() { 
   const navigate = useNavigate(); 
   const location = useLocation();
   const { allBooks } = useLibrary();
   const { title } = useParams(); 
   const decoded = decodeURIComponent(title || ''); 
-  const item = allBooks.find(b => b.title === decoded) || { author: 'Unknown Author', status: 'Unknown', location: 'Unassigned', cataloged: 'Unknown', provenance: 'No notes.', reading: 'No log.', ownership: 'Unknown.' }; 
+  const item = allBooks.find(b => b.title === decoded) || { author: 'Unknown Author', status: 'Unknown', location: 'Unassigned', cataloged: 'Unknown', provenance: 'No notes.', reading: 'No log.', ownership: 'Unknown.', rating: 0, price: '', purchaseUrl: '', quotes: [] }; 
   
   const fromPath = location.state?.from || '';
   let backLabel = '← Back';
@@ -169,6 +260,54 @@ function BookPage() {
   else if (fromPath.includes('/reading-ledger')) backLabel = '← Back to Ledger';
   else if (fromPath.includes('/catalog')) backLabel = '← Back to Catalog';
   else if (fromPath === '/') backLabel = '← Back to Home';
+
+  const [showExLibris, setShowExLibris] = React.useState(false);
+  const [quoteText, setQuoteText] = React.useState('');
+  const [quotePage, setQuotePage] = React.useState('');
+  const [quoteNotes, setQuoteNotes] = React.useState('');
+
+  const [sessionPage, setSessionPage] = React.useState('');
+  const [sessionDate, setSessionDate] = React.useState(new Date().toISOString().split('T')[0]);
+  const [sessionNotes, setSessionNotes] = React.useState('');
+
+  React.useEffect(() => {
+    if (item && item.currentPage !== undefined) {
+      setSessionPage(item.currentPage);
+    }
+  }, [item]);
+
+  const handleLogSession = async (e) => {
+    e.preventDefault();
+    if (!sessionPage.toString().trim() || !item.id) return;
+    const pastSessions = Array.isArray(item.readingSessions) ? item.readingSessions : [];
+    const newPage = parseInt(sessionPage, 10);
+    const totalP = parseInt(item.totalPages, 10);
+
+    const newSession = {
+      page: newPage,
+      date: sessionDate,
+      notes: sessionNotes.trim(),
+      addedAt: new Date().toISOString().split('T')[0]
+    };
+
+    const updatedFields = {
+      currentPage: newPage,
+      readingSessions: [...pastSessions, newSession]
+    };
+
+    if (!isNaN(totalP) && totalP > 0 && newPage >= totalP) {
+      const confirmCompletion = window.confirm(`You reached page ${newPage} of ${totalP}! Would you like to mark this book as Finished?`);
+      if (confirmCompletion) {
+        updatedFields.status = 'Owned';
+        updatedFields.inQueue = false;
+        updatedFields.finishedAt = sessionDate;
+      }
+    }
+
+    await updateDoc(doc(db, 'books', item.id), updatedFields);
+    setSessionNotes('');
+  };
+
   const handleFinish = async () => {
     if (!item.id) return;
     await updateDoc(doc(db, 'books', item.id), { status: 'Owned', inQueue: false, finishedAt: new Date().toISOString().split('T')[0] });
@@ -191,7 +330,167 @@ function BookPage() {
     });
   };
 
-  return <Shell><div className="pageView"><button type="button" className="backLink" onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'var(--blue)' }}>{backLabel}</button><div className="bookHero"><BookCover label={decoded || 'Book'} coverUrl={item.coverUrl} /><div className="bookHeroText"><div style={{display:'flex',justifyContent:'space-between'}}><h2 className="pageTitle">{decoded}</h2><div style={{display:'flex',gap:'10px'}}>{item.status === 'Currently Reading' && <button onClick={handleFinish} className="primaryBtn" style={{padding:'4px 10px',fontSize:'10px',height:'fit-content',alignSelf:'center'}}>Finish Book</button>}{item.status === 'On Loan' && <button onClick={handleReturn} className="primaryBtn" style={{padding:'4px 10px',fontSize:'10px',height:'fit-content',alignSelf:'center',backgroundColor:'#a05252',border:'none',cursor:'pointer'}}>Return Book</button>}{item.id && <Link to={`/edit-book/${item.id}`} className="backLink" style={{alignSelf:'center',marginBottom:0}}>Edit</Link>}</div></div><div className="author bookHeroAuthor">{item.author}</div>{item.series && <div style={{marginBottom:'8px',fontSize:'14px',color:'var(--blue)',fontStyle:'italic'}}><strong>{item.series}</strong> {item.seriesNumber ? `· Book ${item.seriesNumber}` : ''}</div>}<div className="tags"><span>{item.status}</span><span>{item.location || 'Unassigned'}</span></div><div className="bookMetaGrid"><div><span>Status</span><strong>{item.status}</strong></div><div><span>Location</span><strong>{item.location || 'Unassigned'}</strong></div><div><span>Cataloged</span><strong>{item.cataloged}</strong></div></div></div></div>{((item.status === 'On Loan' && item.borrower) || (Array.isArray(item.loans) && item.loans.length > 0)) && (<div className="panel" style={{ marginTop: '14px', background: '#fffcf7', border: '1px solid #d8c6ad', padding: '16px', borderRadius: '12px' }}><h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '24px', margin: '0 0 10px 0', color: 'var(--blue)' }}>Lending Registry</h3>{item.status === 'On Loan' && (<div style={{ marginBottom: '14px', background: '#fff0eb', border: '1px solid #ffcbb3', padding: '12px 14px', borderRadius: '8px', color: '#b34700', fontSize: '13px' }}><strong>Currently Lent To:</strong> <span style={{fontSize: '14px', fontWeight: 'bold'}}>{item.borrower}</span><div style={{ display: 'flex', gap: '20px', marginTop: '6px', fontSize: '12px', color: 'var(--muted)' }}><span><strong>Date Lent:</strong> {item.lentAt ? new Date(item.lentAt).toLocaleDateString('en-US', { timeZone: 'UTC' }) : 'Unrecorded'}</span><span><strong>Date Due:</strong> {item.dueAt ? new Date(item.dueAt).toLocaleDateString('en-US', { timeZone: 'UTC' }) : 'No due date / Open loan'}</span></div></div>)}{Array.isArray(item.loans) && item.loans.length > 0 && (<div><h4 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '18px', margin: '0 0 8px 0', color: 'var(--muted)' }}>Past Circulations</h4><div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>{item.loans.map((loan, idx) => (<div key={idx} style={{ borderLeft: '2px solid var(--line)', paddingLeft: '10px', marginLeft: '4px', fontSize: '12px', color: 'var(--muted)' }}>Lent to <strong>{loan.borrower}</strong> &middot;{' '}{loan.lentAt ? new Date(loan.lentAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }) : 'Unrecorded'}{' '}to{' '}{loan.returnedAt ? new Date(loan.returnedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }) : 'Unrecorded'}</div>))}</div></div>)}</div>)}<div className="bookDetailSections"><section className="bookDetailSection"><h3>Provenance</h3><p>{item.provenance}</p></section><section className="bookDetailSection"><h3>Reading Log</h3><div style={{marginBottom:'10px',fontSize:'13px',color:'var(--muted)'}}>{item.startedAt && <div style={{marginBottom:'4px'}}><strong>Started:</strong> {new Date(item.startedAt).toLocaleDateString('en-US', {timeZone: 'UTC'})}</div>}{item.finishedAt && <div><strong>Finished:</strong> {new Date(item.finishedAt).toLocaleDateString('en-US', {timeZone: 'UTC'})}</div>}</div><p>{item.reading}</p></section><section className="bookDetailSection"><h3>Ownership</h3><p>{item.ownership}</p></section></div></div></Shell> 
+  const handleAcquire = async () => {
+    if (!item.id) return;
+    await updateDoc(doc(db, 'books', item.id), {
+      status: 'Owned',
+      price: '',
+      purchaseUrl: ''
+    });
+  };
+
+  const handleAddQuote = async (e) => {
+    e.preventDefault();
+    if (!quoteText.trim()) return;
+    const pastQuotes = Array.isArray(item.quotes) ? item.quotes : [];
+    const newQuote = {
+      text: quoteText.trim(),
+      page: quotePage.trim(),
+      notes: quoteNotes.trim(),
+      addedAt: new Date().toISOString().split('T')[0]
+    };
+    await updateDoc(doc(db, 'books', item.id), {
+      quotes: [...pastQuotes, newQuote]
+    });
+    setQuoteText('');
+    setQuotePage('');
+    setQuoteNotes('');
+  };
+
+  let progressPct = 0;
+  let hasProgress = false;
+  const cur = parseInt(item.currentPage, 10);
+  const tot = parseInt(item.totalPages, 10);
+  if (!isNaN(cur) && !isNaN(tot) && tot > 0) {
+    progressPct = Math.min(100, Math.max(0, Math.round((cur / tot) * 1000) / 10));
+    hasProgress = true;
+  }
+
+  return <Shell><div className="pageView"><button type="button" className="backLink" onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'var(--blue)' }}>{backLabel}</button><div className="bookHero"><BookCover label={decoded || 'Book'} coverUrl={item.coverUrl} /><div className="bookHeroText"><div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'10px'}}><h2 className="pageTitle" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', margin: 0 }}>{decoded} {item.rating > 0 && <span style={{ color: '#dca842', fontSize: '20px', letterSpacing: '1px' }}>{'★'.repeat(item.rating)}{'☆'.repeat(7 - item.rating)}</span>}</h2><div style={{display:'flex',gap:'10px',flexWrap:'wrap'}}>{item.status === 'Currently Reading' && <button onClick={handleFinish} className="primaryBtn" style={{padding:'4px 10px',fontSize:'10px',height:'fit-content',alignSelf:'center',border:'none',cursor:'pointer'}}>Finish Book</button>}{item.status === 'On Loan' && <button onClick={handleReturn} className="primaryBtn" style={{padding:'4px 10px',fontSize:'10px',height:'fit-content',alignSelf:'center',backgroundColor:'#a05252',border:'none',cursor:'pointer'}}>Return Book</button>}{item.status === 'Wishlist' && <button onClick={handleAcquire} className="primaryBtn" style={{padding:'4px 10px',fontSize:'10px',height:'fit-content',alignSelf:'center',backgroundColor:'#4a8a52',border:'none',cursor:'pointer'}}>Acquire Book</button>}{item.finishedAt && <button onClick={() => setShowExLibris(true)} className="primaryBtn" style={{padding:'4px 10px',fontSize:'10px',height:'fit-content',alignSelf:'center',backgroundColor:'#b79f7b',border:'none',cursor:'pointer'}}>Ex Libris Card</button>}{item.id && <Link to={`/edit-book/${item.id}`} className="backLink" style={{alignSelf:'center',marginBottom:0}}>Edit</Link>}</div></div><div className="author bookHeroAuthor">{item.author}</div>{item.series && <div style={{marginBottom:'8px',fontSize:'14px',color:'var(--blue)',fontStyle:'italic'}}><strong>{item.series}</strong> {item.seriesNumber ? `· Book ${item.seriesNumber}` : ''}</div>}<div className="tags"><span>{item.status}</span><span>{item.location || 'Unassigned'}</span>{item.status === 'Wishlist' && item.price && <span style={{backgroundColor:'#fff8ef',borderColor:'#d8ccb8',color:'var(--ink)',fontWeight:'bold'}}>Price: {item.price}</span>}{item.status === 'Wishlist' && item.purchaseUrl && <a href={item.purchaseUrl} target="_blank" rel="noopener noreferrer" style={{fontSize:'10px',padding:'4px 8px',borderRadius:'999px',background:'#efe4d0',border:'1px solid #d8c6ad',color:'var(--blue)',textDecoration:'underline'}}>Purchase Link</a>}</div><div className="bookMetaGrid"><div><span>Status</span><strong>{item.status}</strong></div><div><span>Location</span><strong>{item.location || 'Unassigned'}</strong></div><div><span>Cataloged</span><strong>{item.cataloged}</strong></div></div>
+            {hasProgress && (
+              <div style={{ marginTop: '16px', background: '#fffcf7', border: '1px solid #dcd1be', padding: '12px 14px', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', color: 'var(--ink)' }}>
+                  <span>Reading Progress: <strong>{item.currentPage}</strong> of <strong>{item.totalPages}</strong> pages</span>
+                  <strong style={{ color: 'var(--blue)' }}>{progressPct}%</strong>
+                </div>
+                <div style={{ height: '10px', background: '#efe4d0', borderRadius: '5px', overflow: 'hidden', border: '1px solid #d3c4ad' }}>
+                  <div style={{ width: `${progressPct}%`, height: '100%', background: 'linear-gradient(90deg, #dca842, #b79f7b)', transition: 'width 0.4s ease' }} />
+                </div>
+              </div>
+            )}
+            </div></div>{showExLibris && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setShowExLibris(false)}>
+          <div style={{ background: '#fcf8f2', border: '8px double #c7b8a4', maxWidth: '380px', width: '100%', padding: '30px 24px', position: 'relative', boxShadow: '0 20px 40px rgba(0,0,0,0.3)', borderRadius: '4px', fontFamily: 'Cormorant Garamond, serif', color: '#3c3228', backgroundImage: 'radial-gradient(rgba(0,0,0,0.02) 20%, transparent 20%), radial-gradient(rgba(0,0,0,0.02) 20%, transparent 20%)', backgroundSize: '8px 8px', backgroundPosition: '0 0, 4px 4px' }} onClick={e => e.stopPropagation()}>
+            <button style={{ position: 'absolute', top: '10px', right: '14px', background: 'transparent', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#71645a', fontFamily: 'inherit' }} onClick={() => setShowExLibris(false)}>×</button>
+            <div style={{ border: '1px solid #c7b8a4', padding: '16px', background: 'rgba(255,255,255,0.7)', borderRadius: '2px', textAlign: 'center' }}>
+              <div style={{ fontSize: '12px', letterSpacing: '4px', color: '#b79f7b', textTransform: 'uppercase', marginBottom: '8px', borderBottom: '1px solid var(--line)', paddingBottom: '6px' }}>Ex Libris</div>
+              <h3 style={{ fontSize: '32px', margin: '10px 0 2px 0', lineHeight: 1.1 }}>{decoded}</h3>
+              <div style={{ fontSize: '16px', color: '#71645a', fontStyle: 'italic', marginBottom: '14px' }}>{item.author}</div>
+              <div style={{ color: '#dca842', fontSize: '20px', margin: '10px 0' }}>{'★'.repeat(item.rating || 7)}{'☆'.repeat(7 - (item.rating || 7))}</div>
+              <div style={{ display: 'inline-block', border: '2px solid #a05252', color: '#a05252', textTransform: 'uppercase', padding: '4px 10px', fontSize: '11px', fontWeight: 'bold', letterSpacing: '2px', borderRadius: '4px', margin: '14px 0', transform: 'rotate(-4deg)', boxShadow: '0 0 0 1px #a05252' }}>
+                COMPLETED &middot; {item.finishedAt ? new Date(item.finishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }) : 'TODAY'}
+              </div>
+              <div style={{ borderTop: '1px dashed var(--line)', marginTop: '14px', paddingTop: '12px', fontSize: '13px', fontStyle: 'italic', color: '#71645a', lineHeight: 1.4, textAlign: 'left' }}>
+                "{item.reading || item.provenance || 'A treasured addition to the scriptorium collection.'}"
+              </div>
+              <div style={{ marginTop: '20px', fontSize: '10px', letterSpacing: '1px', textTransform: 'uppercase', color: '#b79f7b' }}>Benedict Library Ledger</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {((item.status === 'On Loan' && item.borrower) || (Array.isArray(item.loans) && item.loans.length > 0)) && (<div className="panel" style={{ marginTop: '14px', background: '#fffcf7', border: '1px solid #d8c6ad', padding: '16px', borderRadius: '12px' }}><h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '24px', margin: '0 0 10px 0', color: 'var(--blue)' }}>Lending Registry</h3>{item.status === 'On Loan' && (<div style={{ marginBottom: '14px', background: '#fff0eb', border: '1px solid #ffcbb3', padding: '12px 14px', borderRadius: '8px', color: '#b34700', fontSize: '13px' }}><strong>Currently Lent To:</strong> <span style={{fontSize: '14px', fontWeight: 'bold'}}>{item.borrower}</span><div style={{ display: 'flex', gap: '20px', marginTop: '6px', fontSize: '12px', color: 'var(--muted)' }}><span><strong>Date Lent:</strong> {item.lentAt ? new Date(item.lentAt).toLocaleDateString('en-US', { timeZone: 'UTC' }) : 'Unrecorded'}</span><span><strong>Date Due:</strong> {item.dueAt ? new Date(item.dueAt).toLocaleDateString('en-US', { timeZone: 'UTC' }) : 'No due date / Open loan'}</span></div></div>)}{Array.isArray(item.loans) && item.loans.length > 0 && (<div><h4 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '18px', margin: '0 0 8px 0', color: 'var(--muted)' }}>Past Circulations</h4><div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>{item.loans.map((loan, idx) => (<div key={idx} style={{ borderLeft: '2px solid var(--line)', paddingLeft: '10px', marginLeft: '4px', fontSize: '12px', color: 'var(--muted)' }}>Lent to <strong>{loan.borrower}</strong> &middot;{' '}{loan.lentAt ? new Date(loan.lentAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }) : 'Unrecorded'}{' '}to{' '}{loan.returnedAt ? new Date(loan.returnedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }) : 'Unrecorded'}</div>))}</div></div>)}</div>)}
+
+      {item.id && (
+        <div className="panel" style={{ marginTop: '14px', background: '#fffefb', border: '1px solid #d9cdbd', padding: '16px', borderRadius: '12px' }}>
+          <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '24px', margin: '0 0 10px 0', color: 'var(--blue)' }}>The Scriptorium Commonplace</h3>
+          {Array.isArray(item.quotes) && item.quotes.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
+              {item.quotes.map((q, idx) => (
+                <div key={idx} style={{ background: '#fdfbfa', border: '1px solid var(--line)', padding: '12px 14px', borderRadius: '8px', fontSize: '13px' }}>
+                  <p style={{ margin: '0 0 6px 0', fontStyle: 'italic', color: 'var(--ink)', lineHeight: 1.45 }}>"{q.text}"</p>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--muted)' }}>
+                    <span>{q.page ? `Page ${q.page}` : 'Unrecorded page'}</span>
+                    {q.notes && <span style={{ fontWeight: '500', color: 'var(--blue)' }}>{q.notes}</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <form onSubmit={handleAddQuote} style={{ display: 'grid', gap: '10px', borderTop: '1px dashed var(--line)', paddingTop: '14px' }}>
+            <h4 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '18px', margin: '0', color: 'var(--muted)' }}>Record a Notable Passage</h4>
+            <div>
+              <textarea value={quoteText} onChange={e => setQuoteText(e.target.value)} required placeholder="Type the quote or passage here..." style={{ width: '100%', minHeight: '60px', border: '1px solid var(--line)', borderRadius: '8px', background: '#fffefb', padding: '8px 10px', font: 'inherit', color: 'var(--ink)', resize: 'vertical' }} />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '10px' }}>
+              <input type="text" value={quotePage} onChange={e => setQuotePage(e.target.value)} placeholder="Page (e.g. 142)" style={{ width: '100%', border: '1px solid var(--line)', background: '#fffaf6', borderRadius: '999px', padding: '8px 12px', font: 'inherit', color: 'var(--ink)' }} />
+              <input type="text" value={quoteNotes} onChange={e => setQuoteNotes(e.target.value)} placeholder="Notes / Theme (e.g. Socratic Wisdom)" style={{ width: '100%', border: '1px solid var(--line)', background: '#fffaf6', borderRadius: '999px', padding: '8px 12px', font: 'inherit', color: 'var(--ink)' }} />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button type="submit" className="primaryBtn" style={{ padding: '6px 14px', fontSize: '12px', border: 'none', cursor: 'pointer' }}>Record Passage</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      <div className="bookDetailSections">
+        <section className="bookDetailSection" style={{ gridColumn: 'span 3' }}>
+          <h3>Reading Sessions Ledger</h3>
+          <div style={{ marginBottom: '14px', fontSize: '13px', color: 'var(--muted)', display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+            {item.startedAt && <span><strong>Started:</strong> {new Date(item.startedAt).toLocaleDateString('en-US', {timeZone: 'UTC'})}</span>}
+            {item.finishedAt && <span><strong>Finished:</strong> {new Date(item.finishedAt).toLocaleDateString('en-US', {timeZone: 'UTC'})}</span>}
+          </div>
+          
+          {Array.isArray(item.readingSessions) && item.readingSessions.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px', maxHeight: '320px', overflowY: 'auto', paddingRight: '4px' }}>
+              {[...item.readingSessions].sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0)).map((s, idx) => (
+                <div key={idx} style={{ background: '#fdfcf9', border: '1px solid var(--line)', padding: '12px 14px', borderRadius: '8px', fontSize: '13px', borderLeft: '3px solid #dca842' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: 'var(--blue)', marginBottom: '4px', fontSize: '11px' }}>
+                    <span>Checkpoint: p. {s.page}</span>
+                    <span>{s.date ? new Date(s.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }) : 'Unrecorded'}</span>
+                  </div>
+                  <p style={{ margin: '0', fontStyle: 'italic', color: 'var(--ink)', lineHeight: 1.45 }}>"{s.notes || 'Progress checkpoint.'}"</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            item.reading && <p style={{ fontStyle: 'italic', background: '#fdfcf9', border: '1px solid var(--line)', padding: '14px', borderRadius: '8px', marginBottom: '20px' }}>{item.reading}</p>
+          )}
+
+          {item.status === 'Currently Reading' && (
+            <form onSubmit={handleLogSession} style={{ background: '#fffcf7', border: '1px dashed #d8c6ad', padding: '16px', borderRadius: '12px', display: 'grid', gap: '10px', marginTop: '14px' }}>
+              <h4 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '18px', margin: '0', color: 'var(--blue)' }}>Log a Reading Session</h4>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div className="searchBar" style={{ margin: 0 }}>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--muted)' }}>Page Reached</label>
+                  <input type="number" value={sessionPage} onChange={e => setSessionPage(e.target.value)} required min="0" placeholder="e.g. 150" style={{ width: '100%', border: '1px solid var(--line)', background: '#fffaf6', borderRadius: '999px', padding: '8px 12px', font: 'inherit', color: 'var(--ink)' }} />
+                </div>
+                <div className="searchBar" style={{ margin: 0 }}>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--muted)' }}>Session Date</label>
+                  <input type="date" value={sessionDate} onChange={e => setSessionDate(e.target.value)} required style={{ width: '100%', border: '1px solid var(--line)', background: '#fffaf6', borderRadius: '999px', padding: '8px 12px', font: 'inherit', color: 'var(--ink)' }} />
+                </div>
+              </div>
+              <div className="searchBar" style={{ margin: 0 }}>
+                <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--muted)' }}>Reflections / Notes (Optional)</label>
+                <textarea value={sessionNotes} onChange={e => setSessionNotes(e.target.value)} placeholder="Log your observations, insights, or reactions here..." style={{ width: '100%', minHeight: '60px', border: '1px solid var(--line)', borderRadius: '8px', background: '#fffefb', padding: '8px 10px', font: 'inherit', color: 'var(--ink)', resize: 'vertical' }} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <button type="submit" className="primaryBtn" style={{ padding: '6px 14px', fontSize: '12px', border: 'none', cursor: 'pointer' }}>Log Session</button>
+              </div>
+            </form>
+          )}
+        </section>
+
+        <section className="bookDetailSection" style={{ gridColumn: 'span 2' }}>
+          <h3>Provenance</h3>
+          <p>{item.provenance}</p>
+        </section>
+
+        <section className="bookDetailSection" style={{ gridColumn: 'span 1' }}>
+          <h3>Ownership</h3>
+          <p>{item.ownership}</p>
+        </section>
+      </div></div></Shell> 
 }
 
 function SeriesPage() {
@@ -456,6 +755,107 @@ function InsightsPage() {
   );
 }
 
+function CommonplacePage() {
+  const navigate = useNavigate();
+  const { allBooks } = useLibrary();
+
+  // Aggregate all quotes from all books
+  const allQuotes = allBooks.flatMap(b => {
+    const quotes = Array.isArray(b.quotes) ? b.quotes : [];
+    return quotes.map(q => ({
+      ...q,
+      bookTitle: b.title,
+      bookAuthor: b.author
+    }));
+  }).sort((a, b) => new Date(b.addedAt || 0) - new Date(a.addedAt || 0));
+
+  return (
+    <Shell>
+      <div className="pageView">
+        <button type="button" className="backLink" onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'var(--blue)' }}>← Back</button>
+        <h2 className="pageTitle">The Commonplace Book</h2>
+        <p className="pageSubtitle">A dynamic repository of recorded passages, quotes, and wisdom from your collection.</p>
+        {allQuotes.length === 0 ? (
+          <p className="pageSubtitle" style={{ marginTop: '20px' }}>No passages recorded yet. Go to any book's page to add a quote!</p>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px', marginTop: '16px' }}>
+            {allQuotes.map((q, idx) => (
+              <div key={idx} className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: '#fffdf9', height: 'fit-content', border: '1px solid var(--line)' }}>
+                <p style={{ margin: '0', fontStyle: 'italic', fontSize: '14px', lineHeight: 1.45, color: 'var(--ink)' }}>
+                  "{q.text}"
+                </p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', color: 'var(--muted)', borderTop: '1px dashed var(--line)', paddingTop: '8px', marginTop: '6px' }}>
+                  <span>{q.page ? `Page ${q.page}` : 'Unrecorded page'}</span>
+                  {q.notes && <span style={{ fontWeight: '500', color: 'var(--blue)' }}>{q.notes}</span>}
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>
+                  From <Link to={`/book/${encodeURIComponent(q.bookTitle)}`} style={{ fontWeight: 'bold', color: 'var(--blue)', textDecoration: 'underline' }}>{q.bookTitle}</Link> by {q.bookAuthor}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </Shell>
+  );
+}
+
+function WishlistPage() {
+  const navigate = useNavigate();
+  const { allBooks } = useLibrary();
+
+  const wishlistBooks = allBooks.filter(b => b.status === 'Wishlist');
+
+  const handleAcquireBook = async (id) => {
+    await updateDoc(doc(db, 'books', id), {
+      status: 'Owned',
+      price: '',
+      purchaseUrl: ''
+    });
+  };
+
+  return (
+    <Shell>
+      <div className="pageView">
+        <button type="button" className="backLink" onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'var(--blue)' }}>← Back</button>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2 className="pageTitle">The Wishlist Ledger</h2>
+          <Link to="/add-book" className="primaryBtn">Add Book</Link>
+        </div>
+        <p className="pageSubtitle">Books you wish to acquire for your scriptorium collection.</p>
+        {wishlistBooks.length === 0 ? (
+          <p className="pageSubtitle" style={{ marginTop: '20px' }}>Your Wishlist Ledger is currently empty.</p>
+        ) : (
+          <div className="detailList" style={{ marginTop: '16px' }}>
+            {wishlistBooks.map(item => (
+              <div key={item.id} className="detailCard" style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Link to={`/book/${encodeURIComponent(item.title)}`} style={{ display: 'flex', gap: '14px', flex: '1 1 180px' }}>
+                  <div className="detailCover"><BookCover label="Wishlist" coverUrl={item.coverUrl} small muted /></div>
+                  <div className="detailMeta">
+                    <h4 style={{ color: 'var(--ink)' }}>{item.title}</h4>
+                    <div className="author" style={{ color: 'var(--muted)' }}>{item.author}</div>
+                    <div className="tags">
+                      {item.price && <span style={{ backgroundColor: '#fff8ef', borderColor: '#d8ccb8', color: 'var(--ink)', fontWeight: 'bold' }}>Planned Price: {item.price}</span>}
+                      {item.purchaseUrl && <a href={item.purchaseUrl} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} style={{ color: 'var(--blue)', textDecoration: 'underline' }}>Purchase Link</a>}
+                    </div>
+                  </div>
+                </Link>
+                <button 
+                  onClick={async (e) => { e.preventDefault(); e.stopPropagation(); await handleAcquireBook(item.id); }} 
+                  className="primaryBtn" 
+                  style={{ padding: '8px 14px', fontSize: '12px', background: '#4a8a52', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer' }}
+                >
+                  Acquire Volume
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </Shell>
+  );
+}
+
 function Login() {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
@@ -549,6 +949,8 @@ export default function App() {
           <Route path="/edit-book/:id" element={<BookForm />} />
           <Route path="/series" element={<SeriesPage />} />
           <Route path="/insights" element={<InsightsPage />} />
+          <Route path="/commonplace" element={<CommonplacePage />} />
+          <Route path="/wishlist" element={<WishlistPage />} />
         </Routes>
       </BrowserRouter>
     </BookContext.Provider>
