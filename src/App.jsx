@@ -8,7 +8,7 @@ import BookForm from './BookForm'
 import GoodreadsImporter from './GoodreadsImporter'
 
 const BookContext = React.createContext({ stacks:[], archives:[], departures:[], queue:[], recent:[], allBooks:[] });
-function useLibrary() { return React.useContext(BookContext); }
+export function useLibrary() { return React.useContext(BookContext); }
 
 function BookCover({ label, small, muted, coverUrl }) { 
   if (coverUrl) return <img src={coverUrl} alt={label} className={`bookCover ${small ? 'small' : ''} ${muted ? 'mutedCover' : ''}`} style={{ objectFit: 'cover', padding: 0, border: '1px solid #c7b8a4' }} />;

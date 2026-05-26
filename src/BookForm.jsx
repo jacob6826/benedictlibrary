@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { doc, getDoc, setDoc, addDoc, collection, deleteDoc } from 'firebase/firestore';
 import { db } from './firebase';
+import { useLibrary } from './App';
 
 function Shell({ children }) { 
   return (
@@ -41,23 +42,23 @@ const defaultBook = {
 export default function BookForm() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { allBooks } = useLibrary();
   const [formData, setFormData] = useState(defaultBook);
   const [loading, setLoading] = useState(!!id);
   const [fetchingCover, setFetchingCover] = useState(false);
-  const [customLocations, setCustomLocations] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('benedict_locations')) || []; } catch(e) { return []; }
-  });
   const [showOtherLocation, setShowOtherLocation] = useState(false);
-  const [saveNewLocation, setSaveNewLocation] = useState(true);
-
-  const [customSeries, setCustomSeries] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('benedict_series')) || []; } catch(e) { return []; }
-  });
   const [showOtherSeries, setShowOtherSeries] = useState(false);
-  const [saveNewSeries, setSaveNewSeries] = useState(true);
 
-  const allLocations = Array.from(new Set(['Living Room Shelf', 'Office', 'Bedroom', ...customLocations]));
-  const allSeries = Array.from(new Set([...customSeries])).sort();
+  const allLocations = Array.from(new Set([
+    'Living Room Shelf', 
+    'Office', 
+    'Bedroom', 
+    ...allBooks.map(b => b.location).filter(Boolean)
+  ]));
+
+  const allSeries = Array.from(new Set(
+    allBooks.map(b => b.series).filter(Boolean)
+  )).sort();
 
   useEffect(() => {
     if (id) {
@@ -83,9 +84,9 @@ export default function BookForm() {
         setLoading(false);
       });
     } else {
-      setFormData(prev => ({ ...prev, location: allLocations[0] }));
+      setLoading(false);
     }
-  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [id, allBooks]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleFetchCover = async () => {
     if (!formData.title && !formData.isbn) return alert('Please enter a title or ISBN first.');
@@ -140,21 +141,17 @@ export default function BookForm() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => {
+      const next = { ...prev, [name]: value };
+      if (name === 'status' && value === 'Queue') {
+        next.inQueue = true;
+      }
+      return next;
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (showOtherLocation && saveNewLocation && formData.location && !allLocations.includes(formData.location)) {
-      const newLocations = [...customLocations, formData.location];
-      setCustomLocations(newLocations);
-      localStorage.setItem('benedict_locations', JSON.stringify(newLocations));
-    }
-    if (showOtherSeries && saveNewSeries && formData.series && !allSeries.includes(formData.series)) {
-      const newSeriesList = [...customSeries, formData.series];
-      setCustomSeries(newSeriesList);
-      localStorage.setItem('benedict_series', JSON.stringify(newSeriesList));
-    }
     const dataToSave = {
       ...formData,
       tags: formData.tags.split(',').map(t => t.trim()).filter(t => t)
@@ -217,13 +214,7 @@ export default function BookForm() {
                   <option value="Other...">Other...</option>
                 </select>
                 {showOtherSeries && (
-                  <>
-                    <input name="series" value={formData.series} onChange={handleChange} placeholder="Enter series name..." style={{ marginTop: '8px' }} />
-                    <label style={{display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px', fontSize: '11px', color: 'var(--muted)'}}>
-                      <input type="checkbox" checked={saveNewSeries} onChange={(e) => setSaveNewSeries(e.target.checked)} />
-                      Save this series to dropdown options
-                    </label>
-                  </>
+                  <input name="series" value={formData.series} onChange={handleChange} placeholder="Enter series name..." style={{ marginTop: '8px' }} />
                 )}
               </div>
               <div className="searchBar" style={{ margin: 0 }}>
@@ -246,6 +237,7 @@ export default function BookForm() {
                 <label style={{display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)'}}>Status</label>
                 <select name="status" value={formData.status} onChange={handleChange} style={{ width: '100%', border: '1px solid var(--line)', background: '#fffaf6', borderRadius: '999px', padding: '12px 16px', font: 'inherit', color: 'var(--ink)' }}>
                   <option>Owned</option>
+                  <option>Queue</option>
                   <option>Borrowed</option>
                   <option>On Loan</option>
                   <option>Currently Reading</option>
@@ -265,11 +257,12 @@ export default function BookForm() {
 
             <div className="searchBar" style={{ margin: 0 }}>
               <label style={{display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)'}}>Location</label>
-              <select value={showOtherLocation || (formData.location && !allLocations.includes(formData.location)) ? 'Other...' : (formData.location || allLocations[0])} onChange={(e) => { if (e.target.value === 'Other...') { setShowOtherLocation(true); if (allLocations.includes(formData.location)) setFormData(prev => ({...prev, location: ''})); } else { setShowOtherLocation(false); setFormData(prev => ({...prev, location: e.target.value})); } }} style={{ width: '100%', border: '1px solid var(--line)', background: '#fffaf6', borderRadius: '999px', padding: '12px 16px', font: 'inherit', color: 'var(--ink)' }}>
-                {allLocations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
+              <select value={showOtherLocation || (formData.location && !allLocations.includes(formData.location)) ? 'Other...' : (formData.location || '')} onChange={(e) => { if (e.target.value === 'Other...') { setShowOtherLocation(true); if (allLocations.includes(formData.location)) setFormData(prev => ({...prev, location: ''})); } else { setShowOtherLocation(false); setFormData(prev => ({...prev, location: e.target.value})); } }} style={{ width: '100%', border: '1px solid var(--line)', background: '#fffaf6', borderRadius: '999px', padding: '12px 16px', font: 'inherit', color: 'var(--ink)' }}>
+                <option value="">Unassigned / Queue</option>
+                {allLocations.map(loc => loc && <option key={loc} value={loc}>{loc}</option>)}
                 <option value="Other...">Other...</option>
               </select>
-              {showOtherLocation && <div style={{ marginTop: '10px' }}><input name="location" value={formData.location} onChange={handleChange} placeholder="Enter new location..." autoFocus /><label style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px', fontSize: '12px', color: 'var(--muted)' }}><input type="checkbox" checked={saveNewLocation} onChange={e => setSaveNewLocation(e.target.checked)} />Save this location to dropdown options</label></div>}
+              {showOtherLocation && <div style={{ marginTop: '10px' }}><input name="location" value={formData.location} onChange={handleChange} placeholder="Enter new location..." autoFocus /></div>}
             </div>
 
             <div className="searchBar" style={{ margin: 0 }}>
