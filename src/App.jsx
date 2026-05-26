@@ -1,6 +1,12 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route, Link, useParams, useNavigate, useLocation } from 'react-router-dom'
 import './styles.css'
+
+// Apply dark-mode theme immediately upon load to prevent bright-screen flashing
+if (localStorage.getItem('theme') === 'dark') {
+  document.body.classList.add('dark-mode');
+}
+
 import { auth, db } from './firebase'
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth'
 import { collection, onSnapshot, query, writeBatch, doc, updateDoc } from 'firebase/firestore'
@@ -14,23 +20,68 @@ function BookCover({ label, small, muted, coverUrl }) {
   if (coverUrl) return <img src={coverUrl} alt={label} className={`bookCover ${small ? 'small' : ''} ${muted ? 'mutedCover' : ''}`} style={{ objectFit: 'cover', padding: 0, border: '1px solid #c7b8a4' }} />;
   return <div className={`bookCover ${small ? 'small' : ''} ${muted ? 'mutedCover' : ''}`}>{label}</div>;
 }
-function Header() { 
+
+export function Header() { 
+  const [isDark, setIsDark] = React.useState(document.body.classList.contains('dark-mode'));
+  
+  const toggleTheme = () => {
+    if (document.body.classList.contains('dark-mode')) {
+      document.body.classList.remove('dark-mode');
+      localStorage.setItem('theme', 'light');
+      setIsDark(false);
+    } else {
+      document.body.classList.add('dark-mode');
+      localStorage.setItem('theme', 'dark');
+      setIsDark(true);
+    }
+  };
+
   const handleLogout = () => { if (auth.currentUser) signOut(auth); };
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <div className="titleRow">
-        <span className="ornament" /><h1>Benedict Library</h1><span className="ornament" />
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', position: 'relative', padding: '10px 0 16px' }}>
+      <button 
+        onClick={toggleTheme} 
+        title="Toggle Theme" 
+        style={{ position: 'absolute', top: '18px', right: '22px', background: 'transparent', border: '1px solid var(--line)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '16px', color: 'var(--muted)', transition: 'all 0.2s', boxShadow: '0 2px 6px rgba(0,0,0,0.05)', userSelect: 'none', outline: 'none', zIndex: 10 }}
+      >
+        {isDark ? '☀️' : '🌙'}
+      </button>
+
+      {/* 1. Shield Logo SVG at the very top */}
+      <svg width="56" height="42" viewBox="0 0 100 80" fill="none" className="headerCrest" style={{ color: 'var(--blue)', marginBottom: '10px' }}>
+        {/* Shield Outline */}
+        <path d="M35 15H65V35C65 48 50 58 50 58C50 58 35 48 35 35V15Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+        {/* Laurel Wreaths */}
+        <path d="M26 20C22 26 22 36 30 43" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3"/>
+        <path d="M74 20C78 26 78 36 70 43" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3"/>
+        {/* Open Book */}
+        <path d="M42 29C45 29 48 28 50 26C52 28 55 29 58 29" stroke="currentColor" strokeWidth="1.5"/>
+        <path d="M42 23C45 22 48 21 50 19C52 21 55 22 58 23" stroke="currentColor" strokeWidth="1.5"/>
+        <path d="M50 19V26" stroke="currentColor" strokeWidth="1.5"/>
+        {/* Guiding Star */}
+        <path d="M50 8L52 12L56 12L53 14L54 18L50 16L46 18L47 14L44 12L48 12L50 8Z" fill="currentColor"/>
+      </svg>
+
+      {/* 2. Benedict Library title with the ornaments extending left/right */}
+      <div className="titleRow" style={{ margin: '0' }}>
+        <span className="ornament" />
+        <h1>Benedict Library</h1>
+        <span className="ornament" />
       </div>
+
+      {/* 3. Private Library subtitle kicker directly below */}
+      <div className="studyKicker" style={{ marginTop: '6px' }}>Private Library</div>
+
       {auth.currentUser && (
-        <div style={{ display: 'flex', gap: '10px', marginTop: '-10px', marginBottom: '16px' }}>
-          <Link to="/add-book" className="backLink" style={{ cursor: 'pointer', fontSize: '10px', padding: '4px 10px', background: 'var(--blue)', color: '#fff', border: 'none' }}>+ Add Book</Link>
-          <button onClick={handleLogout} className="backLink" style={{ cursor: 'pointer', fontSize: '10px', padding: '4px 10px', background: 'transparent', color: 'var(--muted)', border: '1px solid var(--line)' }}>Log Out</button>
+        <div style={{ display: 'flex', gap: '10px', marginTop: '12px', marginBottom: '8px', alignItems: 'center' }}>
+          <Link to="/add-book" className="primaryBtn" style={{ cursor: 'pointer', fontSize: '10px', padding: '0 10px', border: 'none', display: 'inline-flex', alignItems: 'center', height: '22px', lineHeight: '1' }}>+ Add Book</Link>
+          <button onClick={handleLogout} className="backLink" style={{ cursor: 'pointer', fontSize: '10px', padding: '0 10px', background: 'transparent', color: 'var(--muted)', border: '1px solid var(--line)', display: 'inline-flex', alignItems: 'center', height: '22px', lineHeight: '1' }}>Log Out</button>
         </div>
       )}
     </div>
   ); 
 }
-function Shell({ children }) { return <div className="page"><Header />{children}</div> }
+function Shell({ children }) { return <div className="page" style={{ position: 'relative' }}><Header />{children}</div> }
 
 function Home() { 
   const { stacks, archives, departures, queue, recent, allBooks } = useLibrary();
@@ -66,8 +117,8 @@ function Home() {
             <span>Progress: <strong>{currentlyReading.currentPage}</strong> of <strong>{currentlyReading.totalPages}</strong> pages</span>
             <strong>{progressPct}%</strong>
           </div>
-          <div style={{ height: '8px', background: '#efe4d0', borderRadius: '4px', overflow: 'hidden', border: '1px solid #dcd1be' }}>
-            <div style={{ width: `${progressPct}%`, height: '100%', background: 'linear-gradient(90deg, #dca842, #b79f7b)', borderRadius: '4px', transition: 'width 0.5s ease' }} />
+          <div className="progressBarBg" style={{ height: '8px', borderRadius: '4px', overflow: 'hidden' }}>
+            <div className="progressBarFill" style={{ width: `${progressPct}%`, height: '100%', borderRadius: '4px', transition: 'width 0.5s ease' }} />
           </div>
         </div>
       )}
@@ -75,11 +126,11 @@ function Home() {
       <p>{currentlyReading ? (currentlyReading.reading || 'No active reading progress logged.') : 'No active reading progress logged.'}</p>
       
       {recentSessions.length > 0 && (
-        <div style={{ marginTop: '16px', borderTop: '1px dashed #d8c6ad', paddingTop: '12px', maxWidth: '400px' }}>
-          <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1.2px', color: '#b79f7b', marginBottom: '8px', fontFamily: 'Inter, sans-serif', fontWeight: 'bold' }}>Active Reflections:</div>
+        <div className="deskReflections" style={{ marginTop: '16px', paddingTop: '12px', maxWidth: '400px' }}>
+          <div className="reflectionTitle" style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: '8px', fontFamily: 'Inter, sans-serif', fontWeight: 'bold' }}>Active Reflections:</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {recentSessions.map((s, idx) => (
-              <div key={idx} style={{ fontSize: '12px', fontStyle: 'italic', color: '#5c4e43', lineHeight: '1.4' }}>
+              <div key={idx} className="reflectionText" style={{ fontSize: '12px', fontStyle: 'italic', lineHeight: '1.4' }}>
                 <strong>p. {s.page}</strong> ({new Date(s.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}): "{s.notes}"
               </div>
             ))}
@@ -110,8 +161,8 @@ function BookCard({ item }) {
           <span>Reading Progress</span>
           <span>{pct}%</span>
         </div>
-        <div style={{ height: '4px', background: '#efe4d0', borderRadius: '2px', overflow: 'hidden' }}>
-          <div style={{ width: `${pct}%`, height: '100%', background: '#dca842' }} />
+        <div className="progressBarBg" style={{ height: '4px', borderRadius: '2px', overflow: 'hidden', borderWidth: 0 }}>
+          <div className="progressBarFill" style={{ width: `${pct}%`, height: '100%' }} />
         </div>
       </div>
     );
@@ -368,13 +419,13 @@ function BookPage() {
 
   return <Shell><div className="pageView"><button type="button" className="backLink" onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'var(--blue)' }}>{backLabel}</button><div className="bookHero"><BookCover label={decoded || 'Book'} coverUrl={item.coverUrl} /><div className="bookHeroText"><div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'10px'}}><h2 className="pageTitle" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', margin: 0 }}>{decoded} {item.rating > 0 && <span style={{ color: '#dca842', fontSize: '20px', letterSpacing: '1px' }}>{'★'.repeat(item.rating)}{'☆'.repeat(7 - item.rating)}</span>}</h2><div style={{display:'flex',gap:'10px',flexWrap:'wrap'}}>{item.status === 'Currently Reading' && <button onClick={handleFinish} className="primaryBtn" style={{padding:'4px 10px',fontSize:'10px',height:'fit-content',alignSelf:'center',border:'none',cursor:'pointer'}}>Finish Book</button>}{item.status === 'On Loan' && <button onClick={handleReturn} className="primaryBtn" style={{padding:'4px 10px',fontSize:'10px',height:'fit-content',alignSelf:'center',backgroundColor:'#a05252',border:'none',cursor:'pointer'}}>Return Book</button>}{item.status === 'Wishlist' && <button onClick={handleAcquire} className="primaryBtn" style={{padding:'4px 10px',fontSize:'10px',height:'fit-content',alignSelf:'center',backgroundColor:'#4a8a52',border:'none',cursor:'pointer'}}>Acquire Book</button>}{item.finishedAt && <button onClick={() => setShowExLibris(true)} className="primaryBtn" style={{padding:'4px 10px',fontSize:'10px',height:'fit-content',alignSelf:'center',backgroundColor:'#b79f7b',border:'none',cursor:'pointer'}}>Ex Libris Card</button>}{item.id && <Link to={`/edit-book/${item.id}`} className="backLink" style={{alignSelf:'center',marginBottom:0}}>Edit</Link>}</div></div><div className="author bookHeroAuthor">{item.author}</div>{item.series && <div style={{marginBottom:'8px',fontSize:'14px',color:'var(--blue)',fontStyle:'italic'}}><strong>{item.series}</strong> {item.seriesNumber ? `· Book ${item.seriesNumber}` : ''}</div>}<div className="tags"><span>{item.status}</span><span>{item.location || 'Unassigned'}</span>{item.status === 'Wishlist' && item.price && <span style={{backgroundColor:'#fff8ef',borderColor:'#d8ccb8',color:'var(--ink)',fontWeight:'bold'}}>Price: {item.price}</span>}{item.status === 'Wishlist' && item.purchaseUrl && <a href={item.purchaseUrl} target="_blank" rel="noopener noreferrer" style={{fontSize:'10px',padding:'4px 8px',borderRadius:'999px',background:'#efe4d0',border:'1px solid #d8c6ad',color:'var(--blue)',textDecoration:'underline'}}>Purchase Link</a>}</div><div className="bookMetaGrid"><div><span>Status</span><strong>{item.status}</strong></div><div><span>Location</span><strong>{item.location || 'Unassigned'}</strong></div><div><span>Cataloged</span><strong>{item.cataloged}</strong></div></div>
             {hasProgress && (
-              <div style={{ marginTop: '16px', background: '#fffcf7', border: '1px solid #dcd1be', padding: '12px 14px', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div className="bookProgressBlock" style={{ marginTop: '16px', padding: '12px 14px', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', color: 'var(--ink)' }}>
                   <span>Reading Progress: <strong>{item.currentPage}</strong> of <strong>{item.totalPages}</strong> pages</span>
                   <strong style={{ color: 'var(--blue)' }}>{progressPct}%</strong>
                 </div>
-                <div style={{ height: '10px', background: '#efe4d0', borderRadius: '5px', overflow: 'hidden', border: '1px solid #d3c4ad' }}>
-                  <div style={{ width: `${progressPct}%`, height: '100%', background: 'linear-gradient(90deg, #dca842, #b79f7b)', transition: 'width 0.4s ease' }} />
+                <div className="progressBarBg" style={{ height: '10px', borderRadius: '5px', overflow: 'hidden' }}>
+                  <div className="progressBarFill" style={{ width: `${progressPct}%`, height: '100%', transition: 'width 0.4s ease' }} />
                 </div>
               </div>
             )}

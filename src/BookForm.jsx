@@ -2,18 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { doc, getDoc, setDoc, addDoc, collection, deleteDoc } from 'firebase/firestore';
 import { db } from './firebase';
-import { useLibrary } from './App';
+import { useLibrary, Header } from './App';
 
 function Shell({ children }) { 
   return (
-    <div className="page">
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <div className="titleRow">
-          <span className="ornament" />
-          <h1>Benedict Library</h1>
-          <span className="ornament" />
-        </div>
-      </div>
+    <div className="page" style={{ position: 'relative' }}>
+      <Header />
       {children}
     </div>
   ); 

@@ -22,3 +22,197 @@
   .pageView > div[style*="justify-content: space-between"] { flex-direction: column; align-items: flex-start !important; gap: 12px; }
   .pageView > div[style*="justify-content: space-between"] > div { flex-wrap: wrap; }
 }
+
+/* Scriptorium Header and Theme Layout Enhancements */
+.headerCrest {
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.studyKicker {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.38em;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-top: 6px;
+  margin-bottom: 2px;
+}
+
+/* Custom Progress Bar Classes */
+.progressBarBg {
+  background: #efe4d0;
+  border: 1px solid #dcd1be;
+}
+.progressBarFill {
+  background: linear-gradient(90deg, #dca842, #b79f7b);
+}
+
+/* Reflections Styling */
+.deskReflections {
+  border-top: 1px dashed #d8c6ad;
+}
+.reflectionTitle {
+  color: #b79f7b;
+}
+.reflectionText {
+  color: #5c4e43;
+}
+
+/* Premium Brand Charcoal & Navy Dark Mode */
+body.dark-mode {
+  --bg: #141619;
+  --ink: #e2e4e9;
+  --muted: #8a92a3;
+  --blue: #8ea6d2; /* High-readability brand navy in dark mode */
+  --line: #2d3139;
+  --cream: #1b1e22;
+  background: linear-gradient(180deg, #101214 0%, #141619 100%) !important;
+  color: var(--ink) !important;
+}
+
+body.dark-mode .panel, 
+body.dark-mode .detailCard, 
+body.dark-mode .departureCard, 
+body.dark-mode .bookHero,
+body.dark-mode .ledgerPanel,
+body.dark-mode .bookDetailSection {
+  background: linear-gradient(180deg, #1b1e23, #16191c) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02), 0 8px 20px rgba(0,0,0,0.4) !important;
+  border-color: var(--line) !important;
+}
+
+body.dark-mode .plaque {
+  background: linear-gradient(180deg, #242a36, #1c212b) !important;
+  border-color: #3b4456 !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -6px 10px rgba(0,0,0,0.3) !important;
+}
+
+body.dark-mode .count,
+body.dark-mode .plaque p {
+  color: #e2e4e9 !important;
+}
+
+body.dark-mode .plaque h3 {
+  color: #8ea6d2 !important;
+}
+
+body.dark-mode .bookCard {
+  background: #181b1f !important;
+  border-color: var(--line) !important;
+}
+
+body.dark-mode .tags span {
+  background: #1a1e24 !important;
+  border-color: #2b3342 !important;
+  color: #8ea6d2 !important;
+}
+
+body.dark-mode .primaryBtn,
+body.dark-mode a.backLink {
+  background: var(--blue) !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .primaryBtn:hover,
+body.dark-mode a.backLink:hover {
+  background: #6a82b3 !important;
+  box-shadow: 0 0 12px rgba(91, 115, 166, 0.3) !important;
+}
+
+body.dark-mode .backLink {
+  color: #8ea6d2 !important;
+}
+
+body.dark-mode input, 
+body.dark-mode textarea, 
+body.dark-mode select {
+  background: #101214 !important;
+  border-color: #2d3139 !important;
+  color: #e2e4e9 !important;
+}
+
+body.dark-mode input:focus, 
+body.dark-mode textarea:focus, 
+body.dark-mode select:focus {
+  border-color: var(--blue) !important;
+  box-shadow: 0 0 0 3px rgba(91, 115, 166, 0.2) !important;
+}
+
+body.dark-mode .titleRow h1 {
+  color: #8ea6d2 !important;
+  background: linear-gradient(135deg, #b8ceff 0%, #5b73a2 50%, #b8ceff 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  text-shadow: 0px 2px 10px rgba(91, 115, 166, 0.25) !important;
+  padding-bottom: 8px !important;
+  margin-bottom: -8px !important;
+}
+
+body.dark-mode .studyKicker {
+  color: #8ea6d2 !important;
+}
+
+body.dark-mode .footerLinks {
+  color: var(--muted) !important;
+}
+
+body.dark-mode .footerLinks a {
+  color: var(--muted) !important;
+}
+
+body.dark-mode .footerLinks a:hover {
+  color: #8ea6d2 !important;
+}
+
+body.dark-mode .count {
+  color: #8ea6d2 !important;
+}
+
+body.dark-mode .kicker {
+  color: #8ea6d2 !important;
+}
+
+body.dark-mode .hero h2 {
+  color: var(--ink) !important;
+}
+
+body.dark-mode .year {
+  color: var(--ink) !important;
+}
+
+body.dark-mode .entry {
+  color: var(--muted) !important;
+}
+
+body.dark-mode .timeline .entry {
+  border-left-color: var(--line) !important;
+}
+
+body.dark-mode .progressBarBg {
+  background: #1b1e22 !important;
+  border-color: #2d3139 !important;
+}
+body.dark-mode .progressBarFill {
+  background: linear-gradient(90deg, #5b73a2, #8ea6d2) !important;
+}
+
+body.dark-mode .deskReflections {
+  border-top-color: #2d3139 !important;
+}
+body.dark-mode .reflectionTitle {
+  color: #8ea6d2 !important;
+}
+body.dark-mode .reflectionText {
+  color: #a69586 !important;
+}
+
+.bookProgressBlock {
+  background: #fffcf7;
+  border: 1px solid #dcd1be;
+}
+body.dark-mode .bookProgressBlock {
+  background: #1b1e22 !important;
+  border-color: #2d3139 !important;
+}
+
