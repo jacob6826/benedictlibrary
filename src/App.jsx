@@ -44,7 +44,7 @@ function Home() {
   <section className="plaqueGrid"><Link to="/stacks" className="plaque linkCard"><h3>The Stacks</h3><div className="count">{stacks.length} Physical Volumes</div><p>Active physical holdings, on shelves or on loan.</p></Link><Link to="/archives" className="plaque linkCard"><h3>The Archives</h3><div className="count">{archives.length} Digital Volumes</div><p>Cataloged ebooks and audiobooks.</p></Link></section>
   <section className="middleGrid"><Link to="/reading-ledger" className="panel linkCard"><h3>Recently Cataloged</h3>{recent.length === 0 && <p className="pageSubtitle">No recently cataloged books.</p>}<div className="coverRow">{recent.map((b) => <div key={b.id} className="mini"><BookCover label={b.title} coverUrl={b.coverUrl} small /><div className="caption">New</div></div>)}</div><h3 className="queueTitle">The Queue</h3>{queue.length === 0 && <p className="pageSubtitle">Your queue is empty.</p>}<div className="coverRow">{queue.slice(0, 5).map((b) => <div key={b.id} className="mini"><BookCover label={b.title} coverUrl={b.coverUrl} small /></div>)}</div></Link><Link to="/reading-ledger" className="panel linkCard timeline"><h3>The Annals</h3>{annals.length === 0 ? <p className="pageSubtitle">No reading history.</p> : Object.entries(homeAnnalsGrouped).sort((a,b)=>b[0]-a[0]).map(([year, books]) => <div key={year} style={{marginBottom:'12px'}}><div className="year" style={{marginBottom:'6px'}}>{year}</div>{books.map(b => <div key={b.id} className="entry" style={{marginBottom:'8px'}}>Finished {b.title} &middot; {new Date(b.finishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}</div>)}</div>)}</Link></section>
   <section className="bottomGrid"><Link to="/circulation" className="panel linkCard"><h3>The Circulation Desk</h3>{stacks.filter(b => b.status === 'On Loan').length === 0 ? <p className="pageSubtitle">No books currently on loan.</p> : stacks.filter(b => b.status === 'On Loan').map(b => <div key={b.title} className="bookCard"><BookCover label="On Loan" coverUrl={b.coverUrl} small /><div><h4>{b.title}</h4><p>{b.author}</p><div className="tags"><span>On Loan</span></div></div></div>)}</Link><Link to="/departures" className="panel linkCard"><h3>The Ledger of Departures</h3>{recentDepartures.length === 0 && <p className="pageSubtitle">No departed books.</p>}{recentDepartures.map(d => <div key={d.title} className="bookCard"><BookCover label={d.status} coverUrl={d.coverUrl} small muted /><div><h4>{d.title}</h4><p>{d.status}</p><div className="tags"><span>Archived</span></div></div></div>)}</Link></section>
-  <footer className="footerLinks"><Link to="/circulation">Circulation List</Link><Link to="/series">The Series</Link><Link to="/catalog">Detailed Catalog</Link><Link to="/departures">Past Departures</Link></footer>
+  <footer className="footerLinks"><Link to="/circulation">Circulation List</Link><Link to="/series">The Series</Link><Link to="/catalog">Detailed Catalog</Link><Link to="/insights">Library Insights</Link><Link to="/departures">Past Departures</Link></footer>
 </Shell>) }
 
 function BookCard({ item }) { const location = useLocation(); return <Link to={`/book/${encodeURIComponent(item.title)}`} state={{ from: location.pathname }} className="detailCard"><div className="detailCover"><BookCover label={item.title} coverUrl={item.coverUrl} small /></div><div className="detailMeta"><h4>{item.title}</h4><div className="author">{item.author}</div><div className="tags">{item.series && <span style={{backgroundColor:'#e8ebf2',borderColor:'#c1c9dd',color:'#4a5d85'}}>{item.series}{item.seriesNumber ? ` #${item.seriesNumber}` : ''}</span>}{(item.tags||[]).map(t => <span key={t}>{t}</span>)}</div></div></Link> }
@@ -182,6 +182,219 @@ function SeriesPage() {
   </Shell>
 }
 
+function InsightsPage() {
+  const navigate = useNavigate();
+  const { allBooks } = useLibrary();
+
+  // 1. Basic Stats
+  const totalBooks = allBooks.length;
+
+  // 2. Format Composition
+  const formatTally = allBooks.reduce((acc, b) => {
+    const type = b.type || 'Physical';
+    acc[type] = (acc[type] || 0) + 1;
+    return acc;
+  }, { Physical: 0, Ebook: 0, Audiobook: 0 });
+
+  // 3. Shelf Occupancy (active physical books, excluding departed)
+  const activePhysical = allBooks.filter(b => b.type === 'Physical' && !['Gifted', 'Sold', 'Donated'].includes(b.status));
+  const shelfOccupancy = activePhysical.reduce((acc, b) => {
+    const loc = b.location || 'Unassigned';
+    acc[loc] = (acc[loc] || 0) + 1;
+    return acc;
+  }, {});
+
+  // 4. Tag/Subject Cloud
+  const tagTally = allBooks.reduce((acc, b) => {
+    const tags = Array.isArray(b.tags) ? b.tags : (typeof b.tags === 'string' ? b.tags.split(',').map(t => t.trim()) : []);
+    tags.forEach(t => {
+      if (t) acc[t] = (acc[t] || 0) + 1;
+    });
+    return acc;
+  }, {});
+  const sortedTags = Object.entries(tagTally).sort((a, b) => b[1] - a[1]).slice(0, 10);
+
+  // 5. Annual Reading Velocity (with format breakdowns)
+  const annualCompletions = allBooks.reduce((acc, b) => {
+    if (b.finishedAt) {
+      const year = new Date(b.finishedAt).getFullYear();
+      if (!isNaN(year)) {
+        acc[year] = acc[year] || { total: 0, Physical: 0, Ebook: 0, Audiobook: 0 };
+        const type = b.type === 'Physical' ? 'Physical' : (b.type === 'Ebook' ? 'Ebook' : 'Audiobook');
+        acc[year].total += 1;
+        acc[year][type] += 1;
+      }
+    }
+    return acc;
+  }, {});
+  const sortedYears = Object.entries(annualCompletions).sort((a, b) => Number(a[0]) - Number(b[0]));
+  const maxYearCount = Math.max(...Object.values(annualCompletions).map(y => y.total), 1);
+  const maxFormatCount = Math.max(...Object.values(annualCompletions).flatMap(y => [y.Physical, y.Ebook, y.Audiobook]), 1);
+
+  // 6. In Reading Queue Tally
+  const queueBooksCount = allBooks.filter(b => b.status === 'Queue' || b.inQueue).length;
+
+  // 7. Series Stats
+  const seriesGroups = allBooks.reduce((acc, b) => {
+    if (b.series) acc[b.series] = (acc[b.series] || 0) + 1;
+    return acc;
+  }, {});
+  const totalSeries = Object.keys(seriesGroups).length;
+
+  return (
+    <Shell>
+      <div className="pageView">
+        <button type="button" className="backLink" onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'var(--blue)' }}>← Back</button>
+        <h2 className="pageTitle">Library Insights</h2>
+        <p className="pageSubtitle">A visual ledger and dynamic statistics of your personal collection.</p>
+
+        {/* Overview Row */}
+        <div className="inventoryHero" style={{ marginBottom: '24px' }}>
+          <div className="inventoryStat">
+            <div className="statLabel">Total Collection</div>
+            <div className="statValue">{totalBooks}</div>
+          </div>
+          <div className="inventoryStat">
+            <div className="statLabel">In Reading Queue</div>
+            <div className="statValue">{queueBooksCount}</div>
+            <div style={{ fontSize: '10px', color: 'var(--muted)', marginTop: '4px' }}>Volumes waiting on ledger</div>
+          </div>
+          <div className="inventoryStat">
+            <div className="statLabel">Active Series</div>
+            <div className="statValue">{totalSeries}</div>
+          </div>
+        </div>
+
+        {/* Layout Grid */}
+        <div className="ledgerGrid" style={{ gridTemplateColumns: '1fr 1fr', gap: '20px', display: 'grid' }}>
+          
+          {/* Format Composition */}
+          <section className="ledgerPanel" style={{ minHeight: 'auto' }}>
+            <div className="panelTop">
+              <h3>Format Composition</h3>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '14px' }}>
+              {Object.entries(formatTally).map(([format, count]) => {
+                const percentage = totalBooks > 0 ? Math.round((count / totalBooks) * 100) : 0;
+                return (
+                  <div key={format} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                      <strong>{format}</strong>
+                      <span style={{ color: 'var(--muted)' }}>{count} volumes ({percentage}%)</span>
+                    </div>
+                    <div style={{ height: '8px', background: '#efe4d0', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div style={{ width: `${percentage}%`, height: '100%', background: 'var(--blue)', borderRadius: '4px', transition: 'width 0.3s ease' }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* Reading Velocity Bar Chart */}
+          <section className="ledgerPanel" style={{ minHeight: 'auto' }}>
+            <div className="panelTop">
+              <h3>Annual Reading Velocity</h3>
+            </div>
+            {sortedYears.length === 0 ? (
+              <p className="pageSubtitle" style={{ margin: '20px 0 0' }}>No reading timeline data logged yet.</p>
+            ) : (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', height: '140px', marginTop: '24px', paddingBottom: '20px', borderBottom: '1px solid var(--line)' }}>
+                  {sortedYears.map(([year, data]) => {
+                    return (
+                      <div key={year} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', width: '65px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 'bold', marginBottom: '6px' }}>{data.total}</span>
+                        {/* Side-by-Side Grouped Bars */}
+                        <div style={{ display: 'flex', gap: '4px', alignItems: 'flex-end', height: '80px', width: '100%', justifyContent: 'center' }}>
+                          {/* Physical Bar Group */}
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', height: '100%' }}>
+                            {data.Physical > 0 && <span style={{ fontSize: '9px', color: 'var(--muted)', marginBottom: '2px' }}>{data.Physical}</span>}
+                            <div style={{ width: '10px', height: `${(data.Physical / maxFormatCount) * 100}%`, background: 'var(--blue)', borderRadius: '2px 2px 0 0', minHeight: data.Physical > 0 ? '2px' : '0' }} title={`${data.Physical} physical finished`} />
+                          </div>
+                          {/* Ebook Bar Group */}
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', height: '100%' }}>
+                            {data.Ebook > 0 && <span style={{ fontSize: '9px', color: 'var(--muted)', marginBottom: '2px' }}>{data.Ebook}</span>}
+                            <div style={{ width: '10px', height: `${(data.Ebook / maxFormatCount) * 100}%`, background: '#6d7e9e', borderRadius: '2px 2px 0 0', minHeight: data.Ebook > 0 ? '2px' : '0' }} title={`${data.Ebook} ebook finished`} />
+                          </div>
+                          {/* Audiobook Bar Group */}
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', height: '100%' }}>
+                            {data.Audiobook > 0 && <span style={{ fontSize: '9px', color: 'var(--muted)', marginBottom: '2px' }}>{data.Audiobook}</span>}
+                            <div style={{ width: '10px', height: `${(data.Audiobook / maxFormatCount) * 100}%`, background: '#b79f7b', borderRadius: '2px 2px 0 0', minHeight: data.Audiobook > 0 ? '2px' : '0' }} title={`${data.Audiobook} audiobook finished`} />
+                          </div>
+                        </div>
+                        <span style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '8px', whiteSpace: 'nowrap' }}>{year}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                {/* Visual Legend */}
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '14px', marginTop: '14px', fontSize: '11px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ width: '12px', height: '12px', background: 'var(--blue)', borderRadius: '3px' }} />
+                    <span>Physical</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ width: '12px', height: '12px', background: '#6d7e9e', borderRadius: '3px' }} />
+                    <span>Ebook</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ width: '12px', height: '12px', background: '#b79f7b', borderRadius: '3px' }} />
+                    <span>Audiobook</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </section>
+
+          {/* Shelf Occupancy */}
+          <section className="ledgerPanel" style={{ minHeight: 'auto' }}>
+            <div className="panelTop">
+              <h3>Shelf Occupancy</h3>
+              <div className="panelPill">Physical holdings</div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '14px' }}>
+              {Object.entries(shelfOccupancy).length === 0 ? (
+                <p className="pageSubtitle" style={{ margin: 0 }}>No active physical holdings cataloged.</p>
+              ) : (
+                Object.entries(shelfOccupancy).sort((a,b) => b[1] - a[1]).map(([shelf, count]) => (
+                  <div key={shelf} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: '13px' }}>
+                    <span style={{ fontWeight: '500' }}>{shelf}</span>
+                    <div style={{ flex: 1, borderBottom: '1px dotted var(--line)', margin: '0 8px' }} />
+                    <strong style={{ color: 'var(--blue)' }}>{count} volumes</strong>
+                  </div>
+                ))
+              )}
+            </div>
+          </section>
+
+          {/* Subject Frequency */}
+          <section className="ledgerPanel" style={{ minHeight: 'auto' }}>
+            <div className="panelTop">
+              <h3>Top Collected Subjects</h3>
+              <div className="panelPill">Tag tally</div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '14px' }}>
+              {sortedTags.length === 0 ? (
+                <p className="pageSubtitle" style={{ margin: 0 }}>No tags cataloged yet.</p>
+              ) : (
+                sortedTags.map(([tag, count]) => (
+                  <div key={tag} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: '13px' }}>
+                    <span style={{ fontWeight: '500', background: '#efe4d0', padding: '2px 8px', borderRadius: '12px', fontSize: '11px' }}>{tag}</span>
+                    <div style={{ flex: 1, borderBottom: '1px dotted var(--line)', margin: '0 8px' }} />
+                    <strong style={{ color: 'var(--blue)' }}>{count} times</strong>
+                  </div>
+                ))
+              )}
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </Shell>
+  );
+}
+
 function Login() {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
@@ -274,6 +487,7 @@ export default function App() {
           <Route path="/add-book" element={<BookForm />} />
           <Route path="/edit-book/:id" element={<BookForm />} />
           <Route path="/series" element={<SeriesPage />} />
+          <Route path="/insights" element={<InsightsPage />} />
         </Routes>
       </BrowserRouter>
     </BookContext.Provider>
