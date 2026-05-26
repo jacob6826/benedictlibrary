@@ -47,30 +47,45 @@ export function Header() {
         {isDark ? '☀️' : '🌙'}
       </button>
 
-      {/* 1. Shield Logo SVG at the very top */}
-      <svg width="56" height="42" viewBox="0 0 100 80" fill="none" className="headerCrest" style={{ color: 'var(--blue)', marginBottom: '10px' }}>
-        {/* Shield Outline */}
-        <path d="M35 15H65V35C65 48 50 58 50 58C50 58 35 48 35 35V15Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
-        {/* Laurel Wreaths */}
-        <path d="M26 20C22 26 22 36 30 43" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3"/>
-        <path d="M74 20C78 26 78 36 70 43" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3"/>
-        {/* Open Book */}
-        <path d="M42 29C45 29 48 28 50 26C52 28 55 29 58 29" stroke="currentColor" strokeWidth="1.5"/>
-        <path d="M42 23C45 22 48 21 50 19C52 21 55 22 58 23" stroke="currentColor" strokeWidth="1.5"/>
-        <path d="M50 19V26" stroke="currentColor" strokeWidth="1.5"/>
-        {/* Guiding Star */}
-        <path d="M50 8L52 12L56 12L53 14L54 18L50 16L46 18L47 14L44 12L48 12L50 8Z" fill="currentColor"/>
-      </svg>
+      {/* Benedict Library title flanked by two large shield crests and ornaments */}
+      <div className="titleRow" style={{ margin: '14px 0 6px 0', gap: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+        <span className="ornament" style={{ width: '10vw', maxWidth: '160px' }} />
+        
+        {/* Left Shield Crest (Scaled so rendered outline matches visual cap-height) */}
+        <svg viewBox="0 15 100 43" fill="none" className="headerCrest" style={{ color: 'var(--blue)', flexShrink: 0, overflow: 'visible' }}>
+          {/* Shield Outline */}
+          <path d="M35 15H65V35C65 48 50 58 50 58C50 58 35 48 35 35V15Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+          {/* Laurel Wreaths */}
+          <path d="M26 20C22 26 22 36 30 43" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3"/>
+          <path d="M74 20C78 26 78 36 70 43" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3"/>
+          {/* Open Book (Unified, background-masked shape for high legibility) */}
+          <path d="M 50,21 C 46,19 41,19 37,21 V 34 C 41,32 46,32 50,34 C 54,32 59,32 63,34 V 21 C 59,19 54,19 50,21 Z" fill="var(--bg)" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+          <path d="M 50,21 V 34" stroke="currentColor" strokeWidth="2"/>
+          {/* Guiding Star */}
+          <path d="M50 8L52 12L56 12L53 14L54 18L50 16L46 18L47 14L44 12L48 12L50 8Z" fill="currentColor"/>
+        </svg>
 
-      {/* 2. Benedict Library title with the ornaments extending left/right */}
-      <div className="titleRow" style={{ margin: '0' }}>
-        <span className="ornament" />
-        <h1>Benedict Library</h1>
-        <span className="ornament" />
+        <h1 style={{ margin: 0, lineHeight: '1' }}>Benedict Library</h1>
+
+        {/* Right Shield Crest (Scaled so rendered outline matches visual cap-height) */}
+        <svg viewBox="0 15 100 43" fill="none" className="headerCrest" style={{ color: 'var(--blue)', flexShrink: 0, overflow: 'visible' }}>
+          {/* Shield Outline */}
+          <path d="M35 15H65V35C65 48 50 58 50 58C50 58 35 48 35 35V15Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+          {/* Laurel Wreaths */}
+          <path d="M26 20C22 26 22 36 30 43" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3"/>
+          <path d="M74 20C78 26 78 36 70 43" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3"/>
+          {/* Open Book (Unified, background-masked shape for high legibility) */}
+          <path d="M 50,21 C 46,19 41,19 37,21 V 34 C 41,32 46,32 50,34 C 54,32 59,32 63,34 V 21 C 59,19 54,19 50,21 Z" fill="var(--bg)" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+          <path d="M 50,21 V 34" stroke="currentColor" strokeWidth="2"/>
+          {/* Guiding Star */}
+          <path d="M50 8L52 12L56 12L53 14L54 18L50 16L46 18L47 14L44 12L48 12L50 8Z" fill="currentColor"/>
+        </svg>
+
+        <span className="ornament" style={{ width: '10vw', maxWidth: '160px' }} />
       </div>
 
-      {/* 3. Private Library subtitle kicker directly below */}
-      <div className="studyKicker" style={{ marginTop: '6px' }}>Private Library</div>
+      {/* Private Library subtitle kicker directly below */}
+      <div className="studyKicker" style={{ marginTop: '4px' }}>Private Library</div>
 
       {auth.currentUser && (
         <div style={{ display: 'flex', gap: '10px', marginTop: '12px', marginBottom: '8px', alignItems: 'center' }}>
