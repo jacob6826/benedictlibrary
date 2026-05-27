@@ -210,12 +210,22 @@ export default function GoodreadsImporter({ onComplete }) {
               </label>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '20px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
               <button 
                 type="button" 
-                className="backLink" 
-                style={{ cursor: 'pointer', fontSize: '12px', padding: '6px 12px', height: 'auto', margin: 0, color: '#a05252', borderColor: '#a05252' }}
                 onClick={handleClearImported}
+                style={{ 
+                  cursor: 'pointer', 
+                  fontSize: '12px', 
+                  padding: '6px 14px', 
+                  margin: 0, 
+                  borderRadius: '999px', 
+                  fontWeight: 'bold', 
+                  background: '#a05252', 
+                  color: '#ffffff', 
+                  border: 'none',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.15)'
+                }}
               >
                 Clear Previous Import
               </button>
@@ -224,14 +234,39 @@ export default function GoodreadsImporter({ onComplete }) {
 
               <button 
                 type="button" 
-                className="backLink" 
-                style={{ cursor: 'pointer', fontSize: '12px', padding: '6px 12px', height: 'auto', margin: 0 }}
                 onClick={() => setShowModal(false)}
+                style={{ 
+                  cursor: 'pointer', 
+                  fontSize: '12px', 
+                  padding: '6px 14px', 
+                  margin: 0, 
+                  borderRadius: '999px', 
+                  fontWeight: 'bold', 
+                  background: 'var(--muted)', 
+                  color: '#ffffff', 
+                  border: 'none',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.15)'
+                }}
               >
                 Cancel
               </button>
               
-              <label className="primaryBtn" style={{ cursor: 'pointer', fontSize: '12px', padding: '6px 14px', margin: 0, display: 'inline-flex', alignItems: 'center' }}>
+              <label 
+                style={{ 
+                  cursor: 'pointer', 
+                  fontSize: '12px', 
+                  padding: '6px 14px', 
+                  margin: 0, 
+                  borderRadius: '999px', 
+                  fontWeight: 'bold', 
+                  background: 'var(--blue)', 
+                  color: '#ffffff', 
+                  border: 'none', 
+                  display: 'inline-flex', 
+                  alignItems: 'center',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.15)'
+                }}
+              >
                 Choose CSV File
                 <input 
                   type="file" 
