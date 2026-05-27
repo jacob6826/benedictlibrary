@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { collection, addDoc, writeBatch, doc } from 'firebase/firestore';
+import { collection, addDoc, writeBatch, doc, query, where, getDocs } from 'firebase/firestore';
 import { db } from './firebase';
 
 function parseCSV(text) {
@@ -138,6 +138,27 @@ export default function GoodreadsImporter({ onComplete }) {
     if (onComplete) onComplete();
   };
 
+  const handleClearImported = async () => {
+    if (!window.confirm("Are you sure you want to delete all books imported from CSV?")) return;
+    setImporting(true);
+    setProgress('Clearing...');
+    try {
+      const q = query(collection(db, 'books'), where('location', '==', 'Imported'));
+      const querySnapshot = await getDocs(q);
+      const batch = writeBatch(db);
+      querySnapshot.forEach(docSnap => {
+        batch.delete(doc(db, 'books', docSnap.id));
+      });
+      await batch.commit();
+      alert(`Successfully deleted ${querySnapshot.size} imported books!`);
+    } catch (err) {
+      console.error(err);
+      alert('Error clearing books. See console.');
+    }
+    setImporting(false);
+    setProgress('');
+  };
+
   return (
     <div style={{ display: 'inline-block' }}>
       <button 
@@ -152,7 +173,7 @@ export default function GoodreadsImporter({ onComplete }) {
 
       {showModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div style={{ background: '#fcf8f2', border: '8px double #c7b8a4', maxWidth: '380px', width: '100%', padding: '24px', position: 'relative', boxShadow: '0 20px 40px rgba(0,0,0,0.3)', borderRadius: '4px', fontFamily: 'Cormorant Garamond, serif', color: '#3c3228' }}>
+          <div style={{ background: '#fcf8f2', border: '8px double #c7b8a4', maxWidth: '420px', width: '100%', padding: '24px', position: 'relative', boxShadow: '0 20px 40px rgba(0,0,0,0.3)', borderRadius: '4px', fontFamily: 'Cormorant Garamond, serif', color: '#3c3228' }}>
             <button 
               style={{ position: 'absolute', top: '10px', right: '14px', background: 'transparent', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#71645a', fontFamily: 'inherit' }} 
               onClick={() => setShowModal(false)}
@@ -189,7 +210,18 @@ export default function GoodreadsImporter({ onComplete }) {
               </label>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '20px' }}>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '20px', flexWrap: 'wrap' }}>
+              <button 
+                type="button" 
+                className="backLink" 
+                style={{ cursor: 'pointer', fontSize: '12px', padding: '6px 12px', height: 'auto', margin: 0, color: '#a05252', borderColor: '#a05252' }}
+                onClick={handleClearImported}
+              >
+                Clear Previous Import
+              </button>
+              
+              <div style={{ flexGrow: 1 }} />
+
               <button 
                 type="button" 
                 className="backLink" 
