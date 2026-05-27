@@ -23,6 +23,7 @@ export default function GoodreadsImporter({ onComplete }) {
   const [progress, setProgress] = useState('');
   const [forceAudiobook, setForceAudiobook] = useState(true);
   const [forceFinished, setForceFinished] = useState(true);
+  const [showModal, setShowModal] = useState(false);
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
@@ -138,38 +139,81 @@ export default function GoodreadsImporter({ onComplete }) {
   };
 
   return (
-    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-      <label className="primaryBtn" style={{ background: 'var(--muted)', cursor: importing ? 'wait' : 'pointer', margin: 0 }}>
+    <div style={{ display: 'inline-block' }}>
+      <button 
+        type="button" 
+        className="primaryBtn" 
+        style={{ background: 'var(--muted)', cursor: importing ? 'wait' : 'pointer' }}
+        onClick={() => setShowModal(true)}
+        disabled={importing}
+      >
         {importing ? progress : 'Import Goodreads CSV'}
-        <input 
-          type="file" 
-          accept=".csv" 
-          style={{ display: 'none' }} 
-          onChange={handleFileChange}
-          disabled={importing}
-        />
-      </label>
-      
-      {!importing && (
-        <div style={{ display: 'flex', gap: '12px', fontSize: '11px', color: 'var(--muted)', fontFamily: 'Inter, sans-serif' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', userSelect: 'none' }}>
-            <input 
-              type="checkbox" 
-              checked={forceAudiobook} 
-              onChange={e => setForceAudiobook(e.target.checked)} 
-              style={{ accentColor: 'var(--blue)', width: '13px', height: '13px', cursor: 'pointer' }}
-            />
-            Force Audiobook
-          </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', userSelect: 'none' }}>
-            <input 
-              type="checkbox" 
-              checked={forceFinished} 
-              onChange={e => setForceFinished(e.target.checked)} 
-              style={{ accentColor: 'var(--blue)', width: '13px', height: '13px', cursor: 'pointer' }}
-            />
-            Mark Completed
-          </label>
+      </button>
+
+      {showModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ background: '#fcf8f2', border: '8px double #c7b8a4', maxWidth: '380px', width: '100%', padding: '24px', position: 'relative', boxShadow: '0 20px 40px rgba(0,0,0,0.3)', borderRadius: '4px', fontFamily: 'Cormorant Garamond, serif', color: '#3c3228' }}>
+            <button 
+              style={{ position: 'absolute', top: '10px', right: '14px', background: 'transparent', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#71645a', fontFamily: 'inherit' }} 
+              onClick={() => setShowModal(false)}
+            >
+              ×
+            </button>
+            <h3 style={{ fontSize: '24px', margin: '0 0 12px 0', borderBottom: '1px solid #c7b8a4', paddingBottom: '6px', color: 'var(--blue)' }}>CSV Import Settings</h3>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', margin: '18px 0', fontSize: '13px', fontFamily: 'Inter, sans-serif', color: 'var(--ink)' }}>
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', cursor: 'pointer', userSelect: 'none' }}>
+                <input 
+                  type="checkbox" 
+                  checked={forceAudiobook} 
+                  onChange={e => setForceAudiobook(e.target.checked)} 
+                  style={{ accentColor: 'var(--blue)', width: '16px', height: '16px', cursor: 'pointer', marginTop: '2px' }}
+                />
+                <div>
+                  <strong>Force Audiobook Format</strong>
+                  <span style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', marginTop: '2px' }}>Import all volumes in this list as audiobooks.</span>
+                </div>
+              </label>
+              
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', cursor: 'pointer', userSelect: 'none' }}>
+                <input 
+                  type="checkbox" 
+                  checked={forceFinished} 
+                  onChange={e => setForceFinished(e.target.checked)} 
+                  style={{ accentColor: 'var(--blue)', width: '16px', height: '16px', cursor: 'pointer', marginTop: '2px' }}
+                />
+                <div>
+                  <strong>Mark all as Completed (Finished)</strong>
+                  <span style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', marginTop: '2px' }}>Populate finished date so they appear in your Annals.</span>
+                </div>
+              </label>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '20px' }}>
+              <button 
+                type="button" 
+                className="backLink" 
+                style={{ cursor: 'pointer', fontSize: '12px', padding: '6px 12px', height: 'auto', margin: 0 }}
+                onClick={() => setShowModal(false)}
+              >
+                Cancel
+              </button>
+              
+              <label className="primaryBtn" style={{ cursor: 'pointer', fontSize: '12px', padding: '6px 14px', margin: 0, display: 'inline-flex', alignItems: 'center' }}>
+                Choose CSV File
+                <input 
+                  type="file" 
+                  accept=".csv" 
+                  style={{ display: 'none' }} 
+                  onChange={(e) => {
+                    handleFileChange(e);
+                    setShowModal(false);
+                  }}
+                  disabled={importing}
+                />
+              </label>
+            </div>
+          </div>
         </div>
       )}
     </div>
