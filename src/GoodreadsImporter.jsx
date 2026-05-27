@@ -21,6 +21,8 @@ function parseCSV(text) {
 export default function GoodreadsImporter({ onComplete }) {
   const [importing, setImporting] = useState(false);
   const [progress, setProgress] = useState('');
+  const [forceAudiobook, setForceAudiobook] = useState(true);
+  const [forceFinished, setForceFinished] = useState(true);
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
@@ -56,20 +58,31 @@ export default function GoodreadsImporter({ onComplete }) {
       if (!title) continue;
 
       let type = 'Physical';
-      const binding = getVal('Binding').toLowerCase();
-      if (binding.includes('kindle') || binding.includes('ebook')) type = 'Ebook';
-      if (binding.includes('audio')) type = 'Audiobook';
+      if (forceAudiobook) {
+        type = 'Audiobook';
+      } else {
+        const binding = getVal('Binding').toLowerCase();
+        if (binding.includes('kindle') || binding.includes('ebook')) type = 'Ebook';
+        if (binding.includes('audio')) type = 'Audiobook';
+      }
 
       let status = 'Owned';
-      const shelf = getVal('Exclusive Shelf').toLowerCase();
-      if (shelf === 'read') status = 'Owned';
-      if (shelf === 'currently-reading') status = 'Currently Reading';
-      if (shelf === 'to-read') status = 'Queue';
+      if (forceFinished) {
+        status = 'Owned';
+      } else {
+        const shelf = getVal('Exclusive Shelf').toLowerCase();
+        if (shelf === 'read') status = 'Owned';
+        if (shelf === 'currently-reading') status = 'Currently Reading';
+        if (shelf === 'to-read') status = 'Queue';
+      }
 
       let finishedAt = getVal('Date Read');
       if (finishedAt) {
         // Goodreads uses YYYY/MM/DD, input type="date" needs YYYY-MM-DD
         finishedAt = finishedAt.replace(/\//g, '-');
+      } else if (forceFinished) {
+        const dateAdded = getVal('Date Added');
+        finishedAt = dateAdded ? dateAdded.replace(/\//g, '-') : new Date().toISOString().split('T')[0];
       }
 
       let cataloged = getVal('Date Added');
@@ -125,8 +138,8 @@ export default function GoodreadsImporter({ onComplete }) {
   };
 
   return (
-    <div style={{ display: 'inline-block' }}>
-      <label className="primaryBtn" style={{ background: 'var(--muted)', cursor: importing ? 'wait' : 'pointer' }}>
+    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+      <label className="primaryBtn" style={{ background: 'var(--muted)', cursor: importing ? 'wait' : 'pointer', margin: 0 }}>
         {importing ? progress : 'Import Goodreads CSV'}
         <input 
           type="file" 
@@ -136,6 +149,29 @@ export default function GoodreadsImporter({ onComplete }) {
           disabled={importing}
         />
       </label>
+      
+      {!importing && (
+        <div style={{ display: 'flex', gap: '12px', fontSize: '11px', color: 'var(--muted)', fontFamily: 'Inter, sans-serif' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', userSelect: 'none' }}>
+            <input 
+              type="checkbox" 
+              checked={forceAudiobook} 
+              onChange={e => setForceAudiobook(e.target.checked)} 
+              style={{ accentColor: 'var(--blue)', width: '13px', height: '13px', cursor: 'pointer' }}
+            />
+            Force Audiobook
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', userSelect: 'none' }}>
+            <input 
+              type="checkbox" 
+              checked={forceFinished} 
+              onChange={e => setForceFinished(e.target.checked)} 
+              style={{ accentColor: 'var(--blue)', width: '13px', height: '13px', cursor: 'pointer' }}
+            />
+            Mark Completed
+          </label>
+        </div>
+      )}
     </div>
   );
 }
