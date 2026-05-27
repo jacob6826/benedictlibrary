@@ -233,3 +233,97 @@ body.dark-mode .bookProgressBlock {
   background: #1b1e22 !important;
   border-color: #2d3139 !important;
 }
+
+/* Mobile Responsiveness & Optimization for Viewports 600px and below (e.g. iPhone 17 Pro) */
+@media (max-width: 600px) {
+  .page {
+    padding: 12px 14px 20px !important;
+  }
+  
+  /* Stack header elements cleanly so they fit within ~390px-430px wide screens */
+  .titleRow {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    margin: 8px 0 4px !important;
+  }
+  
+  /* Make the title fit beautifully on a single line or stack neatly */
+  .titleRow h1 {
+    font-size: 28px !important;
+    text-align: center !important;
+    width: 100% !important;
+    order: 2 !important;
+    background: none !important;
+    -webkit-text-fill-color: var(--ink) !important;
+  }
+  
+  body.dark-mode .titleRow h1 {
+    -webkit-text-fill-color: transparent !important;
+    font-size: 28px !important;
+  }
+  
+  /* Hide the horizontal decorative rules to conserve precious horizontal width */
+  .ornament {
+    display: none !important;
+  }
+  
+  /* Scale and center the two shield crests above the title */
+  .headerCrest {
+    width: 44px !important;
+    height: 22px !important;
+    order: 1 !important;
+    margin: 0 4px !important;
+    transform: none !important;
+  }
+  
+  .studyKicker {
+    margin-top: 2px !important;
+    font-size: 8px !important;
+    letter-spacing: 0.25em !important;
+    order: 3 !important;
+    width: 100% !important;
+    text-align: center !important;
+  }
+  
+  /* Relocate theme toggle button so it does not overlap crests or title */
+  button[title="Toggle Theme"] {
+    position: relative !important;
+    top: 0 !important;
+    right: 0 !important;
+    margin-bottom: 6px !important;
+    align-self: flex-end !important;
+  }
+  
+  /* Tidy up search inputs and selectors */
+  .searchBar input {
+    padding: 10px 14px !important;
+    font-size: 13px !important;
+  }
+  
+  .searchBar select {
+    padding: 10px 14px !important;
+    font-size: 13px !important;
+    width: 100% !important;
+  }
+  
+  /* Resize the Ex Libris cardboard card for mobile screens */
+  div[style*="radial-gradient"] {
+    padding: 20px 16px !important;
+    max-width: 320px !important;
+  }
+  
+  div[style*="radial-gradient"] h3 {
+    font-size: 24px !important;
+  }
+  
+  /* Adjust lists and detail card typography to look crisp and fitting */
+  .detailMeta h4 {
+    font-size: 20px !important;
+  }
+  
+  .detailCard, .departureCard {
+    padding: 10px !important;
+    gap: 10px !important;
+  }
+}
+
