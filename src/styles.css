@@ -363,6 +363,17 @@ html, body {
     padding: 10px !important;
     gap: 10px !important;
   }
+  
+  /* Wrap footer links beautifully so they are 100% accessible on mobile */
+  .footerLinks {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 8px 16px !important;
+    margin-top: 24px !important;
+    padding: 12px 6px !important;
+    text-align: center !important;
+    line-height: 1.6 !important;
+  }
 }
 
 
