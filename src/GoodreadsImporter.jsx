@@ -21,8 +21,8 @@ function parseCSV(text) {
 export default function GoodreadsImporter({ onComplete }) {
   const [importing, setImporting] = useState(false);
   const [progress, setProgress] = useState('');
-  const [forceAudiobook, setForceAudiobook] = useState(true);
-  const [forceFinished, setForceFinished] = useState(true);
+  const [forceAudiobook, setForceAudiobook] = useState(false);
+  const [forceFinished, setForceFinished] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
   const handleFileChange = async (e) => {
@@ -172,15 +172,15 @@ export default function GoodreadsImporter({ onComplete }) {
       </button>
 
       {showModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div style={{ background: '#fcf8f2', border: '8px double #c7b8a4', maxWidth: '420px', width: '100%', padding: '24px', position: 'relative', boxShadow: '0 20px 40px rgba(0,0,0,0.3)', borderRadius: '4px', fontFamily: 'Cormorant Garamond, serif', color: '#3c3228' }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ background: 'var(--cream)', border: '8px double var(--line)', maxWidth: '420px', width: '100%', padding: '24px', position: 'relative', boxShadow: '0 20px 40px rgba(0,0,0,0.4)', borderRadius: '4px', fontFamily: 'Cormorant Garamond, serif', color: 'var(--ink)' }}>
             <button 
-              style={{ position: 'absolute', top: '10px', right: '14px', background: 'transparent', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#71645a', fontFamily: 'inherit' }} 
+              style={{ position: 'absolute', top: '10px', right: '14px', background: 'transparent', border: 'none', fontSize: '24px', cursor: 'pointer', color: 'var(--muted)', fontFamily: 'inherit' }} 
               onClick={() => setShowModal(false)}
             >
               ×
             </button>
-            <h3 style={{ fontSize: '24px', margin: '0 0 12px 0', borderBottom: '1px solid #c7b8a4', paddingBottom: '6px', color: 'var(--blue)' }}>CSV Import Settings</h3>
+            <h3 style={{ fontSize: '24px', margin: '0 0 12px 0', borderBottom: '1px solid var(--line)', paddingBottom: '6px', color: 'var(--blue)' }}>CSV Import Settings</h3>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', margin: '18px 0', fontSize: '13px', fontFamily: 'Inter, sans-serif', color: 'var(--ink)' }}>
               <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', cursor: 'pointer', userSelect: 'none' }}>
