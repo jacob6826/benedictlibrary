@@ -82,6 +82,9 @@ export default function GoodreadsImporter({ onComplete }) {
         readingLog = `Rating: ${getVal('My Rating')}/5\n${readingLog}`.trim();
       }
 
+      const series = getVal('Series') || getVal('sereies');
+      const seriesNumber = getVal('Series Number') || getVal('number of the book in the sereies') || getVal('Book Number');
+
       const bookData = {
         title,
         author,
@@ -96,6 +99,8 @@ export default function GoodreadsImporter({ onComplete }) {
         reading: readingLog,
         ownership: '',
         coverUrl: '',
+        series,
+        seriesNumber,
         createdAt: new Date()
       };
 
