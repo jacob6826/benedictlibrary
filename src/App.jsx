@@ -65,7 +65,9 @@ export function Header() {
           <path d="M50 8L52 12L56 12L53 14L54 18L50 16L46 18L47 14L44 12L48 12L50 8Z" fill="currentColor"/>
         </svg>
 
-        <h1 style={{ margin: 0, lineHeight: '1' }}>Benedict Library</h1>
+        <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <h1 style={{ margin: 0, lineHeight: '1' }}>Benedict Library</h1>
+        </Link>
 
         {/* Right Shield Crest (Scaled so rendered outline matches visual cap-height) */}
         <svg viewBox="0 15 100 43" fill="none" className="headerCrest" style={{ color: 'var(--blue)', flexShrink: 0, overflow: 'visible' }}>
