@@ -378,7 +378,6 @@ function ReadingLedgerPage() {
                 ) : (
                   <button onClick={()=>setManaging(true)} className="primaryBtn" style={{padding:'4px 10px',fontSize:'12px',background:'transparent',color:'var(--muted)',border:'1px solid var(--muted)'}}>Manage</button>
                 )}
-                <div className="panelPill">{queue.length} books</div>
               </div>
             </div>
 
@@ -400,16 +399,12 @@ function ReadingLedgerPage() {
               </div>
             )}
 
-            <div className="ledgerStats" style={{ marginTop: '24px' }}>
-              <div><span>Queue</span><strong>{queue.length}</strong></div>
-              <div><span>Completed</span><strong>{annals.length}</strong></div>
-            </div>
+
           </section>
 
           <section className="ledgerPanel annalsPanel">
             <div className="panelTop">
               <h3>The Annals</h3>
-              <div className="panelPill">Yearly timeline</div>
             </div>
             <div className="timelineBlock">
               {annals.length === 0 ? (
