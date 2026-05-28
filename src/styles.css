@@ -110,7 +110,8 @@ body.dark-mode .bookDetailSection {
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.02), 0 8px 20px rgba(0,0,0,0.4) !important;
   border-color: var(--line) !important;
 }
-body.dark-mode .plaque {
+body.dark-mode .plaque,
+body.dark-mode .inventoryStat {
   background: linear-gradient(180deg, #242a36, #1c212b) !important;
   border-color: #3b4456 !important;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -6px 10px rgba(0,0,0,0.3) !important;
