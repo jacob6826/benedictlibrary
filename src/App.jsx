@@ -777,15 +777,13 @@ function InsightsPage() {
     return acc;
   }, {});
 
-  // 4. Tag/Subject Cloud
-  const tagTally = allBooks.reduce((acc, b) => {
-    const tags = Array.isArray(b.tags) ? b.tags : (typeof b.tags === 'string' ? b.tags.split(',').map(t => t.trim()) : []);
-    tags.forEach(t => {
-      if (t) acc[t] = (acc[t] || 0) + 1;
-    });
+  // 4. Top Collected Authors
+  const authorTally = allBooks.reduce((acc, b) => {
+    const author = b.author || 'Unknown Author';
+    acc[author] = (acc[author] || 0) + 1;
     return acc;
   }, {});
-  const sortedTags = Object.entries(tagTally).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  const sortedAuthors = Object.entries(authorTally).sort((a, b) => b[1] - a[1]).slice(0, 10);
 
   // 5. Annual Reading Velocity (with format breakdowns)
   const annualCompletions = allBooks.reduce((acc, b) => {
@@ -941,21 +939,21 @@ function InsightsPage() {
             </div>
           </section>
 
-          {/* Subject Frequency */}
+          {/* Top Collected Authors */}
           <section className="ledgerPanel" style={{ minHeight: 'auto' }}>
             <div className="panelTop">
-              <h3>Top Collected Subjects</h3>
-              <div className="panelPill">Tag tally</div>
+              <h3>Top Collected Authors</h3>
+              <div className="panelPill">Author tally</div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '14px' }}>
-              {sortedTags.length === 0 ? (
-                <p className="pageSubtitle" style={{ margin: 0 }}>No tags cataloged yet.</p>
+              {sortedAuthors.length === 0 ? (
+                <p className="pageSubtitle" style={{ margin: 0 }}>No authors cataloged yet.</p>
               ) : (
-                sortedTags.map(([tag, count]) => (
-                  <div key={tag} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: '13px' }}>
-                    <span className="subjectTag" style={{ fontWeight: '500', padding: '2px 8px', borderRadius: '12px', fontSize: '11px' }}>{tag}</span>
+                sortedAuthors.map(([author, count]) => (
+                  <div key={author} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: '13px' }}>
+                    <span style={{ fontWeight: '500' }}>{author}</span>
                     <div style={{ flex: 1, borderBottom: '1px dotted var(--line)', margin: '0 8px' }} />
-                    <strong style={{ color: 'var(--blue)' }}>{count} times</strong>
+                    <strong style={{ color: 'var(--blue)' }}>{count} volumes</strong>
                   </div>
                 ))
               )}
