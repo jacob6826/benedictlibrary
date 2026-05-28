@@ -953,24 +953,24 @@ function InsightsPage() {
           </section>
 
           {/* Top Collected Authors */}
-          <section className="ledgerPanel" style={{ minHeight: 'auto', gridColumn: 'span 2' }}>
+          <section className="ledgerPanel" style={{ minHeight: 'auto' }}>
             <div className="panelTop">
               <h3>Top Collected Authors</h3>
               <div className="panelPill">Author tally</div>
             </div>
             
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginTop: '14px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '14px' }}>
               <div>
-                <h4 style={{ borderBottom: '1px dashed var(--line)', paddingBottom: '6px', marginTop: 0, fontFamily: 'Cormorant Garamond, serif', fontSize: '20px', color: 'var(--blue)' }}>Physical & E-Books</h4>
+                <h4 style={{ borderBottom: '1px dashed var(--line)', paddingBottom: '4px', marginTop: 0, fontFamily: 'Cormorant Garamond, serif', fontSize: '16px', color: 'var(--blue)' }}>Volumes</h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
                   {sortedPhysicalEbookAuthors.length === 0 ? (
-                    <p className="pageSubtitle" style={{ margin: 0 }}>No authors cataloged yet.</p>
+                    <p className="pageSubtitle" style={{ margin: 0, fontSize: '11px' }}>No authors cataloged.</p>
                   ) : (
                     sortedPhysicalEbookAuthors.map(([author, count]) => (
-                      <div key={author} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: '13px' }}>
-                        <span style={{ fontWeight: '500' }}>{author}</span>
-                        <div style={{ flex: 1, borderBottom: '1px dotted var(--line)', margin: '0 8px' }} />
-                        <strong style={{ color: 'var(--blue)' }}>{count} volumes</strong>
+                      <div key={author} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: '11px' }}>
+                        <span style={{ fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '85px' }} title={author}>{author}</span>
+                        <div style={{ flex: 1, borderBottom: '1px dotted var(--line)', margin: '0 4px' }} />
+                        <strong style={{ color: 'var(--blue)', flexShrink: 0 }}>{count} vol</strong>
                       </div>
                     ))
                   )}
@@ -978,16 +978,16 @@ function InsightsPage() {
               </div>
 
               <div>
-                <h4 style={{ borderBottom: '1px dashed var(--line)', paddingBottom: '6px', marginTop: 0, fontFamily: 'Cormorant Garamond, serif', fontSize: '20px', color: 'var(--blue)' }}>Audiobooks</h4>
+                <h4 style={{ borderBottom: '1px dashed var(--line)', paddingBottom: '4px', marginTop: 0, fontFamily: 'Cormorant Garamond, serif', fontSize: '16px', color: 'var(--blue)' }}>Audio</h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
                   {sortedAudiobookAuthors.length === 0 ? (
-                    <p className="pageSubtitle" style={{ margin: 0 }}>No authors cataloged yet.</p>
+                    <p className="pageSubtitle" style={{ margin: 0, fontSize: '11px' }}>No authors cataloged.</p>
                   ) : (
                     sortedAudiobookAuthors.map(([author, count]) => (
-                      <div key={author} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: '13px' }}>
-                        <span style={{ fontWeight: '500' }}>{author}</span>
-                        <div style={{ flex: 1, borderBottom: '1px dotted var(--line)', margin: '0 8px' }} />
-                        <strong style={{ color: 'var(--blue)' }}>{count} volumes</strong>
+                      <div key={author} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: '11px' }}>
+                        <span style={{ fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '85px' }} title={author}>{author}</span>
+                        <div style={{ flex: 1, borderBottom: '1px dotted var(--line)', margin: '0 4px' }} />
+                        <strong style={{ color: 'var(--blue)', flexShrink: 0 }}>{count} vol</strong>
                       </div>
                     ))
                   )}
