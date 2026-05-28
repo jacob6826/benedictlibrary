@@ -935,7 +935,6 @@ function InsightsPage() {
           <section className="ledgerPanel" style={{ minHeight: 'auto' }}>
             <div className="panelTop">
               <h3>Shelf Occupancy</h3>
-              <div className="panelPill">Physical holdings</div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '14px' }}>
               {Object.entries(shelfOccupancy).length === 0 ? (
@@ -956,7 +955,6 @@ function InsightsPage() {
           <section className="ledgerPanel" style={{ minHeight: 'auto' }}>
             <div className="panelTop">
               <h3>Top Collected Authors</h3>
-              <div className="panelPill">Author tally</div>
             </div>
             
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '14px' }}>
