@@ -777,13 +777,26 @@ function InsightsPage() {
     return acc;
   }, {});
 
-  // 4. Top Collected Authors
-  const authorTally = allBooks.reduce((acc, b) => {
-    const author = b.author || 'Unknown Author';
-    acc[author] = (acc[author] || 0) + 1;
+  // 4. Top Collected Authors (split by physical/ebook and audiobook)
+  const physicalEbookAuthorTally = allBooks.reduce((acc, b) => {
+    const type = b.type || 'Physical';
+    if (type === 'Physical' || type === 'Ebook') {
+      const author = b.author || 'Unknown Author';
+      acc[author] = (acc[author] || 0) + 1;
+    }
     return acc;
   }, {});
-  const sortedAuthors = Object.entries(authorTally).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  const sortedPhysicalEbookAuthors = Object.entries(physicalEbookAuthorTally).sort((a, b) => b[1] - a[1]).slice(0, 10);
+
+  const audiobookAuthorTally = allBooks.reduce((acc, b) => {
+    const type = b.type || 'Physical';
+    if (type === 'Audiobook') {
+      const author = b.author || 'Unknown Author';
+      acc[author] = (acc[author] || 0) + 1;
+    }
+    return acc;
+  }, {});
+  const sortedAudiobookAuthors = Object.entries(audiobookAuthorTally).sort((a, b) => b[1] - a[1]).slice(0, 10);
 
   // 5. Annual Reading Velocity (with format breakdowns)
   const annualCompletions = allBooks.reduce((acc, b) => {
@@ -940,23 +953,46 @@ function InsightsPage() {
           </section>
 
           {/* Top Collected Authors */}
-          <section className="ledgerPanel" style={{ minHeight: 'auto' }}>
+          <section className="ledgerPanel" style={{ minHeight: 'auto', gridColumn: 'span 2' }}>
             <div className="panelTop">
               <h3>Top Collected Authors</h3>
               <div className="panelPill">Author tally</div>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '14px' }}>
-              {sortedAuthors.length === 0 ? (
-                <p className="pageSubtitle" style={{ margin: 0 }}>No authors cataloged yet.</p>
-              ) : (
-                sortedAuthors.map(([author, count]) => (
-                  <div key={author} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: '13px' }}>
-                    <span style={{ fontWeight: '500' }}>{author}</span>
-                    <div style={{ flex: 1, borderBottom: '1px dotted var(--line)', margin: '0 8px' }} />
-                    <strong style={{ color: 'var(--blue)' }}>{count} volumes</strong>
-                  </div>
-                ))
-              )}
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginTop: '14px' }}>
+              <div>
+                <h4 style={{ borderBottom: '1px dashed var(--line)', paddingBottom: '6px', marginTop: 0, fontFamily: 'Cormorant Garamond, serif', fontSize: '20px', color: 'var(--blue)' }}>Physical & E-Books</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
+                  {sortedPhysicalEbookAuthors.length === 0 ? (
+                    <p className="pageSubtitle" style={{ margin: 0 }}>No authors cataloged yet.</p>
+                  ) : (
+                    sortedPhysicalEbookAuthors.map(([author, count]) => (
+                      <div key={author} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: '13px' }}>
+                        <span style={{ fontWeight: '500' }}>{author}</span>
+                        <div style={{ flex: 1, borderBottom: '1px dotted var(--line)', margin: '0 8px' }} />
+                        <strong style={{ color: 'var(--blue)' }}>{count} volumes</strong>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h4 style={{ borderBottom: '1px dashed var(--line)', paddingBottom: '6px', marginTop: 0, fontFamily: 'Cormorant Garamond, serif', fontSize: '20px', color: 'var(--blue)' }}>Audiobooks</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
+                  {sortedAudiobookAuthors.length === 0 ? (
+                    <p className="pageSubtitle" style={{ margin: 0 }}>No authors cataloged yet.</p>
+                  ) : (
+                    sortedAudiobookAuthors.map(([author, count]) => (
+                      <div key={author} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: '13px' }}>
+                        <span style={{ fontWeight: '500' }}>{author}</span>
+                        <div style={{ flex: 1, borderBottom: '1px dotted var(--line)', margin: '0 8px' }} />
+                        <strong style={{ color: 'var(--blue)' }}>{count} volumes</strong>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
             </div>
           </section>
 
