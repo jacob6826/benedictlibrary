@@ -368,9 +368,9 @@ function ReadingLedgerPage() {
         
         <div className="ledgerGrid">
           <section className="ledgerPanel">
-            <div className="panelTop">
-              <h3>The Queue</h3>
-              <div style={{display:'flex',gap:'8px'}}>
+            <div className="panelTop" style={{ flexDirection: 'column', gap: '8px', alignItems: 'center', width: '100%', marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '28px', margin: 0 }}>The Queue</h3>
+              <div style={{display:'flex', gap:'8px', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', width: '100%'}}>
                 {managing ? (
                   <>
                     <button onClick={selectAll} className="primaryBtn" style={{padding:'4px 10px',fontSize:'12px',background:'var(--muted)'}}>{selected.size === queue.length ? 'Deselect All' : 'Select All'}</button>
@@ -405,8 +405,8 @@ function ReadingLedgerPage() {
           </section>
 
           <section className="ledgerPanel annalsPanel">
-            <div className="panelTop">
-              <h3>The Annals</h3>
+            <div className="panelTop" style={{ justifyContent: 'center', marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '28px', margin: 0 }}>The Annals</h3>
             </div>
             <div className="timelineBlock">
               {annals.length === 0 ? (
