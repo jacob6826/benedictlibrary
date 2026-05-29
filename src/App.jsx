@@ -153,35 +153,62 @@ function Home() {
       <div className="kicker">On the Desk.</div>
       <h2>{currentlyReading ? currentlyReading.title : 'Nothing currently on the desk'}</h2>
       
-      {hasProgress && (
+      {currentlyReading && (
         <div style={{ margin: '14px 0', maxWidth: '380px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#71645a', marginBottom: '4px', fontFamily: 'Inter, sans-serif' }}>
-            <span>Progress: <strong>{currentlyReading.currentPage}</strong> of <strong>{currentlyReading.totalPages}</strong> pages</span>
-            <strong>{progressPct}%</strong>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-            <div className="progressBarBg" style={{ flexGrow: 1, height: '8px', borderRadius: '4px', overflow: 'hidden', minWidth: '160px' }}>
-              <div className="progressBarFill" style={{ width: `${progressPct}%`, height: '100%', borderRadius: '4px', transition: 'width 0.5s ease' }} />
+          {hasProgress ? (
+            <>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#71645a', marginBottom: '4px', fontFamily: 'Inter, sans-serif' }}>
+                <span>Progress: <strong>{currentlyReading.currentPage}</strong> of <strong>{currentlyReading.totalPages}</strong> pages</span>
+                <strong>{progressPct}%</strong>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                <div className="progressBarBg" style={{ flexGrow: 1, height: '8px', borderRadius: '4px', overflow: 'hidden', minWidth: '160px' }}>
+                  <div className="progressBarFill" style={{ width: `${progressPct}%`, height: '100%', borderRadius: '4px', transition: 'width 0.5s ease' }} />
+                </div>
+                
+                <form onSubmit={handleQuickPageUpdate} style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                  <input 
+                    type="number" 
+                    value={quickPage} 
+                    onChange={e => setQuickPage(e.target.value)} 
+                    placeholder="Page" 
+                    min="0"
+                    max={currentlyReading.totalPages || undefined}
+                    style={{ width: '56px', height: '22px', fontSize: '10px', padding: '2px 6px', border: '1px solid var(--line)', borderRadius: '4px', background: 'var(--cream)', color: 'var(--ink)', fontFamily: 'Inter, sans-serif', outline: 'none' }} 
+                  />
+                  <button 
+                    type="submit" 
+                    style={{ fontSize: '9px', padding: '0 8px', height: '22px', display: 'inline-flex', alignItems: 'center', cursor: 'pointer', borderRadius: '4px', border: 'none', background: 'var(--blue)', color: '#fff', fontWeight: 'bold' }}
+                  >
+                    Update
+                  </button>
+                </form>
+              </div>
+            </>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginTop: '10px' }}>
+              <span style={{ fontSize: '11px', color: '#71645a', fontFamily: 'Inter, sans-serif' }}>
+                {currentlyReading.currentPage ? <>On page <strong>{currentlyReading.currentPage}</strong></> : 'No page logged yet'}
+              </span>
+              <div style={{ flexGrow: 1 }} />
+              <form onSubmit={handleQuickPageUpdate} style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                <input 
+                  type="number" 
+                  value={quickPage} 
+                  onChange={e => setQuickPage(e.target.value)} 
+                  placeholder="Page" 
+                  min="0"
+                  style={{ width: '56px', height: '22px', fontSize: '10px', padding: '2px 6px', border: '1px solid var(--line)', borderRadius: '4px', background: 'var(--cream)', color: 'var(--ink)', fontFamily: 'Inter, sans-serif', outline: 'none' }} 
+                />
+                <button 
+                  type="submit" 
+                  style={{ fontSize: '9px', padding: '0 8px', height: '22px', display: 'inline-flex', alignItems: 'center', cursor: 'pointer', borderRadius: '4px', border: 'none', background: 'var(--blue)', color: '#fff', fontWeight: 'bold' }}
+                >
+                  Update
+                </button>
+              </form>
             </div>
-            
-            <form onSubmit={handleQuickPageUpdate} style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-              <input 
-                type="number" 
-                value={quickPage} 
-                onChange={e => setQuickPage(e.target.value)} 
-                placeholder="Page" 
-                min="0"
-                max={currentlyReading.totalPages || undefined}
-                style={{ width: '56px', height: '22px', fontSize: '10px', padding: '2px 6px', border: '1px solid var(--line)', borderRadius: '4px', background: 'var(--cream)', color: 'var(--ink)', fontFamily: 'Inter, sans-serif', outline: 'none' }} 
-              />
-              <button 
-                type="submit" 
-                style={{ fontSize: '9px', padding: '0 8px', height: '22px', display: 'inline-flex', alignItems: 'center', cursor: 'pointer', borderRadius: '4px', border: 'none', background: 'var(--blue)', color: '#fff', fontWeight: 'bold' }}
-              >
-                Update
-              </button>
-            </form>
-          </div>
+          )}
         </div>
       )}
 
