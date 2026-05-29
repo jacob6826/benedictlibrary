@@ -379,23 +379,20 @@ html, body {
 
 /* On the Desk Column Styling */
 .deskContainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
   width: 100%;
+  align-items: center;
 }
 .deskLeftCol {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-left: auto;
-  margin-right: 0;
+  justify-self: end;
   width: fit-content;
+  text-align: center;
   white-space: nowrap;
 }
 .deskRightCol {
-  margin-left: 14px;
-  margin-right: auto;
+  justify-self: start;
   width: 320px;
   display: flex;
   flex-direction: column;
