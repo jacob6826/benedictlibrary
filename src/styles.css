@@ -387,10 +387,18 @@ html, body {
   align-items: center;
 }
 .deskLeftCol {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
   justify-self: end;
   width: fit-content;
+}
+.deskLeftColText {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  white-space: nowrap;
 }
 .deskRightCol {
   justify-self: start;
@@ -407,9 +415,13 @@ html, body {
     gap: 16px !important;
   }
   .deskLeftCol {
+    flex-direction: column !important;
     margin: 0 auto !important;
-    text-align: center !important;
+    align-items: center !important;
+    gap: 12px !important;
     max-width: 100% !important;
+  }
+  .deskLeftColText {
     white-space: normal !important;
   }
   .deskRightCol {

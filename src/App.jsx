@@ -192,15 +192,18 @@ function Home() {
     ) : (
       <div className="deskContainer">
         
-        {/* Left Column: Book name, Series (optional) & Author */}
+        {/* Left Column: Book cover, name, Series (optional) & Author */}
         <div className="deskLeftCol">
-          <h2 style={{ fontSize: '28px', margin: '0 0 4px 0', fontWeight: 'bold', fontFamily: 'Cormorant Garamond, serif', color: 'var(--ink)', lineHeight: '1.15' }}>{currentlyReading.title}</h2>
-          {displaySeries && (
-            <div style={{ fontSize: '12px', color: 'var(--blue)', fontStyle: 'italic', margin: '2px 0 4px 0' }}>
-              <strong>{displaySeries}</strong>{displaySeriesNumber ? ` · Book ${displaySeriesNumber}` : ''}
-            </div>
-          )}
-          <div className="author" style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '4px' }}>{currentlyReading.author}</div>
+          <BookCover label={currentlyReading.title} coverUrl={currentlyReading.coverUrl} />
+          <div className="deskLeftColText">
+            <h2 style={{ fontSize: '28px', margin: '0 0 4px 0', fontWeight: 'bold', fontFamily: 'Cormorant Garamond, serif', color: 'var(--ink)', lineHeight: '1.15' }}>{currentlyReading.title}</h2>
+            {displaySeries && (
+              <div style={{ fontSize: '12px', color: 'var(--blue)', fontStyle: 'italic', margin: '2px 0 4px 0' }}>
+                <strong>{displaySeries}</strong>{displaySeriesNumber ? ` · Book ${displaySeriesNumber}` : ''}
+              </div>
+            )}
+            <div className="author" style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '4px' }}>{currentlyReading.author}</div>
+          </div>
         </div>
 
         {/* Right Column: Progress bar & Buttons */}
