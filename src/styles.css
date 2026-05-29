@@ -377,4 +377,42 @@ html, body {
   }
 }
 
+/* On the Desk Column Styling */
+.deskContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  width: 100%;
+  margin: 0 auto;
+}
+.deskLeftCol {
+  flex: 0 1 auto;
+  text-align: right;
+  white-space: nowrap;
+}
+.deskRightCol {
+  flex: 0 1 auto;
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+@media (max-width: 800px) {
+  .deskLeftCol {
+    text-align: center !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+  }
+  .deskRightCol {
+    max-width: 100% !important;
+    align-items: center !important;
+    width: 100% !important;
+  }
+  .deskRightCol form {
+    justify-content: center !important;
+  }
+}
+
 
