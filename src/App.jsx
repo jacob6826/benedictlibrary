@@ -176,6 +176,8 @@ function Home() {
       batch.update(doc(db, 'books', b.id), fields);
     });
     await batch.commit();
+    setQuickPage('');
+    setIsEditingPage(false);
   };
 
   let progressPct = 0;
@@ -254,6 +256,13 @@ function Home() {
               </button>
               <button 
                 type="button" 
+                onClick={handleFinishCurrentlyReading}
+                style={{ fontSize: '10px', padding: '0 10px', height: '26px', display: 'inline-flex', alignItems: 'center', cursor: 'pointer', borderRadius: '4px', border: 'none', background: '#b79f7b', color: '#fff', fontWeight: 'bold' }}
+              >
+                Finished
+              </button>
+              <button 
+                type="button" 
                 onClick={() => { setIsEditingPage(false); setQuickPage(''); }}
                 style={{ fontSize: '10px', padding: '0 10px', height: '26px', display: 'inline-flex', alignItems: 'center', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--line)', background: 'var(--cream)', color: 'var(--ink)', fontWeight: 'normal' }}
               >
@@ -281,13 +290,6 @@ function Home() {
                   style={{ fontSize: '10px', padding: '0 12px', height: '22px', display: 'inline-flex', alignItems: 'center', cursor: 'pointer', borderRadius: '999px', border: 'none', background: 'var(--blue)', color: '#fff', fontWeight: 'bold' }}
                 >
                   Update
-                </button>
-                <button 
-                  type="button" 
-                  onClick={handleFinishCurrentlyReading}
-                  style={{ fontSize: '10px', padding: '0 12px', height: '22px', display: 'inline-flex', alignItems: 'center', cursor: 'pointer', borderRadius: '999px', border: 'none', background: '#b79f7b', color: '#fff', fontWeight: 'bold' }}
-                >
-                  Finished
                 </button>
                 <Link to={`/book/${encodeURIComponent(currentlyReading.title)}`} className="primaryBtn" style={{ textAlign: 'center', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', height: '22px', padding: '0 12px', fontSize: '10px', background: 'var(--muted)' }}>
                   View Log
