@@ -177,75 +177,85 @@ function Home() {
     : [];
 
   return (<Shell>
-  <section className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '14px', padding: '24px 20px', alignItems: 'center', textAlign: 'center' }}>
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', width: '100%', maxWidth: '420px' }}>
-      <div className="heroText" style={{ width: '100%' }}>
-        <div className="kicker" style={{ textAlign: 'center' }}>On the Desk.</div>
-        <h2 style={{ fontSize: '32px', margin: '0 0 6px 0', fontWeight: 'bold', textAlign: 'center' }}>{currentlyReading ? currentlyReading.title : 'Nothing currently on the desk'}</h2>
-        
-        {currentlyReading && (
-          <div style={{ margin: '14px auto 0 auto', width: '100%' }}>
-            {isEditingPage ? (
-              <form onSubmit={handleQuickPageUpdate} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '10px' }}>
-                <input 
-                  type="number" 
-                  value={quickPage} 
-                  onChange={e => setQuickPage(e.target.value)} 
-                  placeholder="Page" 
-                  min="0"
-                  max={displayTotalPages || undefined}
-                  style={{ width: '64px', height: '26px', fontSize: '11px', padding: '2px 6px', border: '1px solid var(--line)', borderRadius: '4px', background: 'var(--cream)', color: 'var(--ink)', fontFamily: 'Inter, sans-serif', outline: 'none' }} 
-                  autoFocus
-                />
-                <button 
-                  type="submit" 
-                  style={{ fontSize: '10px', padding: '0 10px', height: '26px', display: 'inline-flex', alignItems: 'center', cursor: 'pointer', borderRadius: '4px', border: 'none', background: 'var(--blue)', color: '#fff', fontWeight: 'bold' }}
-                >
-                  Save
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => { setIsEditingPage(false); setQuickPage(''); }}
-                  style={{ fontSize: '10px', padding: '0 10px', height: '26px', display: 'inline-flex', alignItems: 'center', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--line)', background: 'var(--cream)', color: 'var(--ink)', fontWeight: 'normal' }}
-                >
-                  Cancel
-                </button>
-              </form>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div className="bookProgressBlock" style={{ padding: '12px 14px', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '6px', border: '1px solid var(--line)', background: 'rgba(255,254,251,0.05)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', color: 'var(--ink)' }}>
-                    <span>Reading Progress: <strong>{displayCurrentPage}</strong> of <strong>{displayTotalPages}</strong> pages</span>
-                    <strong style={{ color: 'var(--blue)' }}>{progressPct}%</strong>
-                  </div>
-                  <div className="progressBarBg" style={{ height: '10px', borderRadius: '5px', overflow: 'hidden' }}>
-                    <div className="progressBarFill" style={{ width: `${progressPct}%`, height: '100%', transition: 'width 0.4s ease' }} />
-                  </div>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '6px' }}>
-                  <button 
-                    type="button" 
-                    onClick={() => {
-                      setQuickPage(displayCurrentPage || '');
-                      setIsEditingPage(true);
-                    }}
-                    style={{ fontSize: '10px', padding: '0 12px', height: '26px', display: 'inline-flex', alignItems: 'center', cursor: 'pointer', borderRadius: '999px', border: 'none', background: 'var(--blue)', color: '#fff', fontWeight: 'bold' }}
-                  >
-                    Update
-                  </button>
-                  <Link to={`/book/${encodeURIComponent(currentlyReading.title)}`} className="primaryBtn" style={{ textAlign: 'center', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', height: '26px', padding: '0 12px', fontSize: '10px', background: 'var(--muted)' }}>
-                    View Log
-                  </Link>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+  <section className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '24px 20px', width: '100%' }}>
+    <div style={{ textAlign: 'center', width: '100%' }}>
+      <div className="kicker" style={{ textAlign: 'center', margin: '0 0 4px 0' }}>On the Desk</div>
     </div>
     
-    {recentSessions.length > 0 && (
-      <div className="deskReflections" style={{ marginTop: '8px', paddingTop: '12px', width: '100%', maxWidth: '420px', textAlign: 'left' }}>
+    {!currentlyReading ? (
+      <div style={{ textAlign: 'center', color: 'var(--muted)', fontStyle: 'italic' }}>Nothing currently on the desk</div>
+    ) : (
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '24px', width: '100%', maxWidth: '800px', margin: '0 auto' }}>
+        
+        {/* Left Column: Book name & Author */}
+        <div style={{ flex: '1 1 240px', textAlign: 'left' }}>
+          <h2 style={{ fontSize: '28px', margin: '0 0 4px 0', fontWeight: 'bold', fontFamily: 'Cormorant Garamond, serif', color: 'var(--ink)', lineHeight: '1.15' }}>{currentlyReading.title}</h2>
+          <div className="author" style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '4px' }}>{currentlyReading.author}</div>
+        </div>
+
+        {/* Right Column: Progress bar & Buttons */}
+        <div style={{ flex: '1 1 280px', maxWidth: '360px', width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {isEditingPage ? (
+            <form onSubmit={handleQuickPageUpdate} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <input 
+                type="number" 
+                value={quickPage} 
+                onChange={e => setQuickPage(e.target.value)} 
+                placeholder="Page" 
+                min="0"
+                max={displayTotalPages || undefined}
+                style={{ width: '64px', height: '26px', fontSize: '11px', padding: '2px 6px', border: '1px solid var(--line)', borderRadius: '4px', background: 'var(--cream)', color: 'var(--ink)', fontFamily: 'Inter, sans-serif', outline: 'none' }} 
+                autoFocus
+              />
+              <button 
+                type="submit" 
+                style={{ fontSize: '10px', padding: '0 10px', height: '26px', display: 'inline-flex', alignItems: 'center', cursor: 'pointer', borderRadius: '4px', border: 'none', background: 'var(--blue)', color: '#fff', fontWeight: 'bold' }}
+              >
+                Save
+              </button>
+              <button 
+                type="button" 
+                onClick={() => { setIsEditingPage(false); setQuickPage(''); }}
+                style={{ fontSize: '10px', padding: '0 10px', height: '26px', display: 'inline-flex', alignItems: 'center', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--line)', background: 'var(--cream)', color: 'var(--ink)', fontWeight: 'normal' }}
+              >
+                Cancel
+              </button>
+            </form>
+          ) : (
+            <>
+              <div className="bookProgressBlock" style={{ padding: '8px 10px', borderRadius: '6px', display: 'flex', flexDirection: 'column', gap: '4px', border: '1px solid var(--line)', background: 'rgba(255,254,251,0.03)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', color: 'var(--ink)' }}>
+                  <span>Reading Progress: <strong>{displayCurrentPage}</strong> of <strong>{displayTotalPages}</strong> pages</span>
+                  <strong style={{ color: 'var(--blue)' }}>{progressPct}%</strong>
+                </div>
+                <div className="progressBarBg" style={{ height: '6px', borderRadius: '3px', overflow: 'hidden' }}>
+                  <div className="progressBarFill" style={{ width: `${progressPct}%`, height: '100%', transition: 'width 0.4s ease' }} />
+                </div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '8px', marginTop: '2px' }}>
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    setQuickPage(displayCurrentPage || '');
+                    setIsEditingPage(true);
+                  }}
+                  style={{ fontSize: '10px', padding: '0 12px', height: '22px', display: 'inline-flex', alignItems: 'center', cursor: 'pointer', borderRadius: '999px', border: 'none', background: 'var(--blue)', color: '#fff', fontWeight: 'bold' }}
+                >
+                  Update
+                </button>
+                <Link to={`/book/${encodeURIComponent(currentlyReading.title)}`} className="primaryBtn" style={{ textAlign: 'center', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', height: '22px', padding: '0 12px', fontSize: '10px', background: 'var(--muted)' }}>
+                  View Log
+                </Link>
+              </div>
+            </>
+          )}
+        </div>
+
+      </div>
+    )}
+
+    {currentlyReading && recentSessions.length > 0 && (
+      <div className="deskReflections" style={{ marginTop: '8px', paddingTop: '12px', width: '100%', maxWidth: '800px', margin: '8px auto 0 auto', textAlign: 'left' }}>
         <div className="reflectionTitle" style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: '8px', fontFamily: 'Inter, sans-serif', fontWeight: 'bold', color: '#b79f7b' }}>Active Reflections:</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {recentSessions.map((s, idx) => (
