@@ -184,26 +184,19 @@ function Home() {
               </button>
             </form>
           ) : (
-            <>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', color: '#71645a', marginBottom: '6px', fontFamily: 'Inter, sans-serif' }}>
-                <span>
-                  {hasProgress ? (
-                    <>Progress: <strong>{currentlyReading.currentPage}</strong> of <strong>{currentlyReading.totalPages}</strong> pages</>
-                  ) : (
-                    currentlyReading.currentPage ? <>On page <strong>{currentlyReading.currentPage}</strong></> : 'No page logged yet'
-                  )}
-                </span>
-                {hasProgress && <strong style={{ fontSize: '11px' }}>{progressPct}%</strong>}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div className="bookProgressBlock" style={{ padding: '12px 14px', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(255, 254, 251, 0.05)', border: '1px solid var(--line)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', color: 'var(--ink)' }}>
+                  <span>
+                    Reading Progress: <strong>{currentlyReading.currentPage || 0}</strong> of <strong>{currentlyReading.totalPages || 0}</strong> pages
+                  </span>
+                  <strong style={{ color: 'var(--blue)' }}>{progressPct}%</strong>
+                </div>
+                <div className="progressBarBg" style={{ height: '10px', borderRadius: '5px', overflow: 'hidden' }}>
+                  <div className="progressBarFill" style={{ width: `${progressPct}%`, height: '100%', transition: 'width 0.4s ease' }} />
+                </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                {hasProgress ? (
-                  <div className="progressBarBg" style={{ flexGrow: 1, height: '8px', borderRadius: '4px', overflow: 'hidden', minWidth: '160px' }}>
-                    <div className="progressBarFill" style={{ width: `${progressPct}%`, height: '100%', borderRadius: '4px', transition: 'width 0.5s ease' }} />
-                  </div>
-                ) : (
-                  <div style={{ flexGrow: 1 }} />
-                )}
-                
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '2px' }}>
                 <button 
                   type="button" 
                   onClick={() => {
@@ -215,7 +208,7 @@ function Home() {
                   Update
                 </button>
               </div>
-            </>
+            </div>
           )}
         </div>
       )}
