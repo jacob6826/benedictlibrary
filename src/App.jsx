@@ -185,16 +185,16 @@ function Home() {
     {!currentlyReading ? (
       <div style={{ textAlign: 'center', color: 'var(--muted)', fontStyle: 'italic' }}>Nothing currently on the desk</div>
     ) : (
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '24px', width: '100%', maxWidth: '800px', margin: '0 auto' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap', gap: '32px', width: '100%', maxWidth: '700px', margin: '0 auto' }}>
         
         {/* Left Column: Book name & Author */}
-        <div style={{ flex: '1 1 240px', textAlign: 'left' }}>
+        <div style={{ flex: '1 1 220px', textAlign: 'left', maxWidth: '300px' }}>
           <h2 style={{ fontSize: '28px', margin: '0 0 4px 0', fontWeight: 'bold', fontFamily: 'Cormorant Garamond, serif', color: 'var(--ink)', lineHeight: '1.15' }}>{currentlyReading.title}</h2>
           <div className="author" style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '4px' }}>{currentlyReading.author}</div>
         </div>
 
         {/* Right Column: Progress bar & Buttons */}
-        <div style={{ flex: '1 1 280px', maxWidth: '360px', width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div style={{ flex: '1 1 260px', maxWidth: '320px', width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {isEditingPage ? (
             <form onSubmit={handleQuickPageUpdate} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <input 
