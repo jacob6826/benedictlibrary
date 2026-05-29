@@ -152,6 +152,32 @@ function Home() {
     setIsEditingPage(false);
   };
 
+  const handleFinishCurrentlyReading = async () => {
+    if (!currentlyReading) return;
+    const confirmCompletion = window.confirm(`Are you sure you want to mark "${currentlyReading.title}" as Finished?`);
+    if (!confirmCompletion) return;
+
+    const batch = writeBatch(db);
+    const sameTitleBooks = allBooks.filter(b => b.title === currentlyReading.title);
+    
+    // Find the total pages from any book copy with the same title to set the current page to the end
+    const bookWithTotal = sameTitleBooks.find(b => parseInt(b.totalPages, 10) > 0);
+    const totalP = bookWithTotal ? bookWithTotal.totalPages : (currentlyReading.totalPages || '');
+
+    sameTitleBooks.forEach(b => {
+      const fields = {
+        status: 'Owned',
+        inQueue: false,
+        finishedAt: new Date().toISOString().split('T')[0]
+      };
+      if (totalP) {
+        fields.currentPage = totalP;
+      }
+      batch.update(doc(db, 'books', b.id), fields);
+    });
+    await batch.commit();
+  };
+
   let progressPct = 0;
   let hasProgress = false;
   let displayTotalPages = '';
@@ -255,6 +281,13 @@ function Home() {
                   style={{ fontSize: '10px', padding: '0 12px', height: '22px', display: 'inline-flex', alignItems: 'center', cursor: 'pointer', borderRadius: '999px', border: 'none', background: 'var(--blue)', color: '#fff', fontWeight: 'bold' }}
                 >
                   Update
+                </button>
+                <button 
+                  type="button" 
+                  onClick={handleFinishCurrentlyReading}
+                  style={{ fontSize: '10px', padding: '0 12px', height: '22px', display: 'inline-flex', alignItems: 'center', cursor: 'pointer', borderRadius: '999px', border: 'none', background: '#b79f7b', color: '#fff', fontWeight: 'bold' }}
+                >
+                  Finished
                 </button>
                 <Link to={`/book/${encodeURIComponent(currentlyReading.title)}`} className="primaryBtn" style={{ textAlign: 'center', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', height: '22px', padding: '0 12px', fontSize: '10px', background: 'var(--muted)' }}>
                   View Log
