@@ -386,9 +386,11 @@ html, body {
   align-items: center;
 }
 .deskLeftCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-self: end;
   width: fit-content;
-  text-align: center;
   white-space: nowrap;
 }
 .deskRightCol {
