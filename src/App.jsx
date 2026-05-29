@@ -150,16 +150,16 @@ function Home() {
     : [];
 
   return (<Shell>
-  <section className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '14px', padding: '24px 20px' }}>
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', width: '100%' }}>
-      <div className="heroText" style={{ flex: '1 1 300px' }}>
-        <div className="kicker">On the Desk.</div>
-        <h2 style={{ fontSize: '32px', margin: '0 0 6px 0', fontWeight: 'bold' }}>{currentlyReading ? currentlyReading.title : 'Nothing currently on the desk'}</h2>
+  <section className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '14px', padding: '24px 20px', alignItems: 'center', textAlign: 'center' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', width: '100%', maxWidth: '420px' }}>
+      <div className="heroText" style={{ width: '100%' }}>
+        <div className="kicker" style={{ textAlign: 'center' }}>On the Desk.</div>
+        <h2 style={{ fontSize: '32px', margin: '0 0 6px 0', fontWeight: 'bold', textAlign: 'center' }}>{currentlyReading ? currentlyReading.title : 'Nothing currently on the desk'}</h2>
         
         {currentlyReading && (
-          <div style={{ margin: '14px 0 0 0', maxWidth: '380px' }}>
+          <div style={{ margin: '14px auto 0 auto', width: '100%' }}>
             {isEditingPage ? (
-              <form onSubmit={handleQuickPageUpdate} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px' }}>
+              <form onSubmit={handleQuickPageUpdate} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '10px' }}>
                 <input 
                   type="number" 
                   value={quickPage} 
@@ -195,36 +195,31 @@ function Home() {
                     <div className="progressBarFill" style={{ width: `${progressPct}%`, height: '100%', transition: 'width 0.4s ease' }} />
                   </div>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '2px' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '6px' }}>
                   <button 
                     type="button" 
                     onClick={() => {
                       setQuickPage(currentlyReading.currentPage || '');
                       setIsEditingPage(true);
                     }}
-                    style={{ fontSize: '10px', padding: '0 10px', height: '22px', display: 'inline-flex', alignItems: 'center', cursor: 'pointer', borderRadius: '4px', border: 'none', background: 'var(--blue)', color: '#fff', fontWeight: 'bold' }}
+                    style={{ fontSize: '10px', padding: '0 12px', height: '26px', display: 'inline-flex', alignItems: 'center', cursor: 'pointer', borderRadius: '999px', border: 'none', background: 'var(--blue)', color: '#fff', fontWeight: 'bold' }}
                   >
                     Update
                   </button>
+                  <Link to={`/book/${encodeURIComponent(currentlyReading.title)}`} className="primaryBtn" style={{ textAlign: 'center', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', height: '26px', padding: '0 12px', fontSize: '10px', background: 'var(--muted)' }}>
+                    View Log
+                  </Link>
                 </div>
               </div>
             )}
           </div>
         )}
       </div>
-      
-      {currentlyReading && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignSelf: 'center', flexShrink: 0 }}>
-          <Link to={`/book/${encodeURIComponent(currentlyReading.title)}`} className="primaryBtn" style={{ textAlign: 'center', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', height: '36px', padding: '0 20px', minWidth: '110px' }}>
-            View Log
-          </Link>
-        </div>
-      )}
     </div>
     
     {recentSessions.length > 0 && (
-      <div className="deskReflections" style={{ marginTop: '8px', paddingTop: '12px', width: '100%' }}>
-        <div className="reflectionTitle" style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: '8px', fontFamily: 'Inter, sans-serif', fontWeight: 'bold' }}>Active Reflections:</div>
+      <div className="deskReflections" style={{ marginTop: '8px', paddingTop: '12px', width: '100%', maxWidth: '420px', textAlign: 'left' }}>
+        <div className="reflectionTitle" style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: '8px', fontFamily: 'Inter, sans-serif', fontWeight: 'bold', color: '#b79f7b' }}>Active Reflections:</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {recentSessions.map((s, idx) => (
             <div key={idx} className="reflectionText" style={{ fontSize: '12px', fontStyle: 'italic', lineHeight: '1.4' }}>
