@@ -389,7 +389,7 @@ html, body {
 }
 .deskLeftCol {
   flex: 0 1 auto;
-  text-align: right;
+  text-align: center;
   white-space: nowrap;
 }
 .deskRightCol {
