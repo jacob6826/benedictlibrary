@@ -137,9 +137,9 @@ function Home() {
   let progressPct = 0;
   let hasProgress = false;
   if (currentlyReading) {
-    const cur = parseInt(currentlyReading.currentPage, 10);
-    const tot = parseInt(currentlyReading.totalPages, 10);
-    if (!isNaN(cur) && !isNaN(tot) && tot > 0) {
+    const cur = parseInt(currentlyReading.currentPage, 10) || 0;
+    const tot = parseInt(currentlyReading.totalPages, 10) || 0;
+    if (tot > 0) {
       progressPct = Math.min(100, Math.max(0, Math.round((cur / tot) * 1000) / 10));
       hasProgress = true;
     }
