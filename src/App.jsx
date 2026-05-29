@@ -106,6 +106,32 @@ function Home() {
   const homeAnnalsGrouped = annals.reduce((acc, b) => { const y = new Date(b.finishedAt).getFullYear(); acc[y] = acc[y] || []; acc[y].push(b); return acc; }, {});
   const recentDepartures = [...departures].sort((a,b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0)).slice(0, 3);
   
+  const [quickPage, setQuickPage] = React.useState('');
+
+  const handleQuickPageUpdate = async (e) => {
+    e.preventDefault();
+    if (!currentlyReading || !currentlyReading.id || !quickPage.trim()) return;
+    const newPage = parseInt(quickPage, 10);
+    const totalP = parseInt(currentlyReading.totalPages, 10);
+    if (isNaN(newPage) || newPage < 0) return alert('Please enter a valid page number.');
+
+    const updatedFields = {
+      currentPage: newPage
+    };
+
+    if (!isNaN(totalP) && totalP > 0 && newPage >= totalP) {
+      const confirmCompletion = window.confirm(`You reached page ${newPage} of ${totalP}! Would you like to mark this book as Finished?`);
+      if (confirmCompletion) {
+        updatedFields.status = 'Owned';
+        updatedFields.inQueue = false;
+        updatedFields.finishedAt = new Date().toISOString().split('T')[0];
+      }
+    }
+
+    await updateDoc(doc(db, 'books', currentlyReading.id), updatedFields);
+    setQuickPage('');
+  };
+
   let progressPct = 0;
   let hasProgress = false;
   if (currentlyReading) {
@@ -128,13 +154,33 @@ function Home() {
       <h2>{currentlyReading ? currentlyReading.title : 'Nothing currently on the desk'}</h2>
       
       {hasProgress && (
-        <div style={{ margin: '14px 0', maxWidth: '360px' }}>
+        <div style={{ margin: '14px 0', maxWidth: '380px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#71645a', marginBottom: '4px', fontFamily: 'Inter, sans-serif' }}>
             <span>Progress: <strong>{currentlyReading.currentPage}</strong> of <strong>{currentlyReading.totalPages}</strong> pages</span>
             <strong>{progressPct}%</strong>
           </div>
-          <div className="progressBarBg" style={{ height: '8px', borderRadius: '4px', overflow: 'hidden' }}>
-            <div className="progressBarFill" style={{ width: `${progressPct}%`, height: '100%', borderRadius: '4px', transition: 'width 0.5s ease' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <div className="progressBarBg" style={{ flexGrow: 1, height: '8px', borderRadius: '4px', overflow: 'hidden', minWidth: '160px' }}>
+              <div className="progressBarFill" style={{ width: `${progressPct}%`, height: '100%', borderRadius: '4px', transition: 'width 0.5s ease' }} />
+            </div>
+            
+            <form onSubmit={handleQuickPageUpdate} style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+              <input 
+                type="number" 
+                value={quickPage} 
+                onChange={e => setQuickPage(e.target.value)} 
+                placeholder="Page" 
+                min="0"
+                max={currentlyReading.totalPages || undefined}
+                style={{ width: '56px', height: '22px', fontSize: '10px', padding: '2px 6px', border: '1px solid var(--line)', borderRadius: '4px', background: 'var(--cream)', color: 'var(--ink)', fontFamily: 'Inter, sans-serif', outline: 'none' }} 
+              />
+              <button 
+                type="submit" 
+                style={{ fontSize: '9px', padding: '0 8px', height: '22px', display: 'inline-flex', alignItems: 'center', cursor: 'pointer', borderRadius: '4px', border: 'none', background: 'var(--blue)', color: '#fff', fontWeight: 'bold' }}
+              >
+                Update
+              </button>
+            </form>
           </div>
         </div>
       )}
