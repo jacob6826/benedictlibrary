@@ -113,33 +113,60 @@ function Home() {
     e.preventDefault();
     if (!currentlyReading || !currentlyReading.id || !quickPage.toString().trim()) return;
     const newPage = parseInt(quickPage, 10);
-    const totalP = parseInt(currentlyReading.totalPages, 10);
     if (isNaN(newPage) || newPage < 0) return alert('Please enter a valid page number.');
+
+    // Find the total pages from any book copy with the same title
+    const sameTitleBooks = allBooks.filter(b => b.title === currentlyReading.title);
+    const bookWithTotal = sameTitleBooks.find(b => parseInt(b.totalPages, 10) > 0);
+    const totalP = bookWithTotal ? parseInt(bookWithTotal.totalPages, 10) : (parseInt(currentlyReading.totalPages, 10) || 0);
 
     const updatedFields = {
       currentPage: newPage
     };
 
-    if (!isNaN(totalP) && totalP > 0 && newPage >= totalP) {
+    let markFinished = false;
+    if (totalP > 0 && newPage >= totalP) {
       const confirmCompletion = window.confirm(`You reached page ${newPage} of ${totalP}! Would you like to mark this book as Finished?`);
       if (confirmCompletion) {
+        markFinished = true;
         updatedFields.status = 'Owned';
         updatedFields.inQueue = false;
         updatedFields.finishedAt = new Date().toISOString().split('T')[0];
       }
     }
 
-    await updateDoc(doc(db, 'books', currentlyReading.id), updatedFields);
+    // Update all book copies with the same title to keep them perfectly in sync
+    const batch = writeBatch(db);
+    sameTitleBooks.forEach(b => {
+      const fields = { currentPage: newPage };
+      if (markFinished) {
+        fields.status = 'Owned';
+        fields.inQueue = false;
+        fields.finishedAt = new Date().toISOString().split('T')[0];
+      }
+      batch.update(doc(db, 'books', b.id), fields);
+    });
+    await batch.commit();
+
     setQuickPage('');
     setIsEditingPage(false);
   };
 
   let progressPct = 0;
   let hasProgress = false;
+  let displayTotalPages = '';
+  let displayCurrentPage = '';
+
   if (currentlyReading) {
-    const cur = parseInt(currentlyReading.currentPage, 10);
-    const tot = parseInt(currentlyReading.totalPages, 10);
-    if (!isNaN(cur) && !isNaN(tot) && tot > 0) {
+    const sameTitleBooks = allBooks.filter(b => b.title === currentlyReading.title);
+    const bookWithTotal = sameTitleBooks.find(b => parseInt(b.totalPages, 10) > 0);
+    
+    displayTotalPages = bookWithTotal ? bookWithTotal.totalPages : (currentlyReading.totalPages || '');
+    displayCurrentPage = currentlyReading.currentPage || '';
+
+    const cur = parseInt(displayCurrentPage, 10) || 0;
+    const tot = parseInt(displayTotalPages, 10) || 0;
+    if (tot > 0) {
       progressPct = Math.min(100, Math.max(0, Math.round((cur / tot) * 1000) / 10));
       hasProgress = true;
     }
@@ -166,7 +193,7 @@ function Home() {
                   onChange={e => setQuickPage(e.target.value)} 
                   placeholder="Page" 
                   min="0"
-                  max={currentlyReading.totalPages || undefined}
+                  max={displayTotalPages || undefined}
                   style={{ width: '64px', height: '26px', fontSize: '11px', padding: '2px 6px', border: '1px solid var(--line)', borderRadius: '4px', background: 'var(--cream)', color: 'var(--ink)', fontFamily: 'Inter, sans-serif', outline: 'none' }} 
                   autoFocus
                 />
@@ -188,7 +215,7 @@ function Home() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div className="bookProgressBlock" style={{ padding: '12px 14px', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '6px', border: '1px solid var(--line)', background: 'rgba(255,254,251,0.05)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', color: 'var(--ink)' }}>
-                    <span>Reading Progress: <strong>{currentlyReading.currentPage}</strong> of <strong>{currentlyReading.totalPages}</strong> pages</span>
+                    <span>Reading Progress: <strong>{displayCurrentPage}</strong> of <strong>{displayTotalPages}</strong> pages</span>
                     <strong style={{ color: 'var(--blue)' }}>{progressPct}%</strong>
                   </div>
                   <div className="progressBarBg" style={{ height: '10px', borderRadius: '5px', overflow: 'hidden' }}>
@@ -199,7 +226,7 @@ function Home() {
                   <button 
                     type="button" 
                     onClick={() => {
-                      setQuickPage(currentlyReading.currentPage || '');
+                      setQuickPage(displayCurrentPage || '');
                       setIsEditingPage(true);
                     }}
                     style={{ fontSize: '10px', padding: '0 12px', height: '26px', display: 'inline-flex', alignItems: 'center', cursor: 'pointer', borderRadius: '999px', border: 'none', background: 'var(--blue)', color: '#fff', fontWeight: 'bold' }}
