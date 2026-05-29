@@ -156,13 +156,18 @@ function Home() {
   let hasProgress = false;
   let displayTotalPages = '';
   let displayCurrentPage = '';
+  let displaySeries = '';
+  let displaySeriesNumber = '';
 
   if (currentlyReading) {
     const sameTitleBooks = allBooks.filter(b => b.title === currentlyReading.title);
     const bookWithTotal = sameTitleBooks.find(b => parseInt(b.totalPages, 10) > 0);
+    const bookWithSeries = sameTitleBooks.find(b => b.series && b.series.trim());
     
     displayTotalPages = bookWithTotal ? bookWithTotal.totalPages : (currentlyReading.totalPages || '');
     displayCurrentPage = currentlyReading.currentPage || '';
+    displaySeries = bookWithSeries ? bookWithSeries.series : (currentlyReading.series || '');
+    displaySeriesNumber = bookWithSeries ? bookWithSeries.seriesNumber : (currentlyReading.seriesNumber || '');
 
     const cur = parseInt(displayCurrentPage, 10) || 0;
     const tot = parseInt(displayTotalPages, 10) || 0;
@@ -190,9 +195,9 @@ function Home() {
         {/* Left Column: Book name, Series (optional) & Author */}
         <div className="deskLeftCol">
           <h2 style={{ fontSize: '28px', margin: '0 0 4px 0', fontWeight: 'bold', fontFamily: 'Cormorant Garamond, serif', color: 'var(--ink)', lineHeight: '1.15' }}>{currentlyReading.title}</h2>
-          {currentlyReading.series && (
+          {displaySeries && (
             <div style={{ fontSize: '12px', color: 'var(--blue)', fontStyle: 'italic', margin: '2px 0 4px 0' }}>
-              <strong>{currentlyReading.series}</strong>{currentlyReading.seriesNumber ? ` · Book ${currentlyReading.seriesNumber}` : ''}
+              <strong>{displaySeries}</strong>{displaySeriesNumber ? ` · Book ${displaySeriesNumber}` : ''}
             </div>
           )}
           <div className="author" style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '4px' }}>{currentlyReading.author}</div>
