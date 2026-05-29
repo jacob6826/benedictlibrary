@@ -386,13 +386,13 @@ html, body {
   align-items: center;
 }
 .deskLeftCol {
-  margin-left: auto;
+  justify-self: end;
   width: fit-content;
   text-align: center;
   white-space: nowrap;
 }
 .deskRightCol {
-  margin-right: auto;
+  justify-self: start;
   width: 320px;
   display: flex;
   flex-direction: column;
