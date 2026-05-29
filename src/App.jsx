@@ -137,9 +137,9 @@ function Home() {
   let progressPct = 0;
   let hasProgress = false;
   if (currentlyReading) {
-    const cur = parseInt(currentlyReading.currentPage, 10) || 0;
-    const tot = parseInt(currentlyReading.totalPages, 10) || 0;
-    if (tot > 0) {
+    const cur = parseInt(currentlyReading.currentPage, 10);
+    const tot = parseInt(currentlyReading.totalPages, 10);
+    if (!isNaN(cur) && !isNaN(tot) && tot > 0) {
       progressPct = Math.min(100, Math.max(0, Math.round((cur / tot) * 1000) / 10));
       hasProgress = true;
     }
@@ -188,7 +188,7 @@ function Home() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div className="bookProgressBlock" style={{ padding: '12px 14px', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '6px', border: '1px solid var(--line)', background: 'rgba(255,254,251,0.05)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', color: 'var(--ink)' }}>
-                    <span>Reading Progress: <strong>{currentlyReading.currentPage || 0}</strong> of <strong>{currentlyReading.totalPages || 0}</strong> pages</span>
+                    <span>Reading Progress: <strong>{currentlyReading.currentPage}</strong> of <strong>{currentlyReading.totalPages}</strong> pages</span>
                     <strong style={{ color: 'var(--blue)' }}>{progressPct}%</strong>
                   </div>
                   <div className="progressBarBg" style={{ height: '10px', borderRadius: '5px', overflow: 'hidden' }}>
