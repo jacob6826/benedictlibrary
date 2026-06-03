@@ -72,8 +72,11 @@ export function Header() {
             <Link to="/circulation" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '18px', color: 'var(--ink)', padding: '4px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Cormorant Garamond, serif' }}>
               Circulation Desk
             </Link>
-            <Link to="/reading-ledger" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '18px', color: 'var(--ink)', padding: '4px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Cormorant Garamond, serif' }}>
-              Reading Ledger
+            <Link to="/queue" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '18px', color: 'var(--ink)', padding: '4px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Cormorant Garamond, serif' }}>
+              Reading Queue
+            </Link>
+            <Link to="/annals" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '18px', color: 'var(--ink)', padding: '4px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Cormorant Garamond, serif' }}>
+              Reading Annals
             </Link>
             <Link to="/series" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '18px', color: 'var(--ink)', padding: '4px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Cormorant Garamond, serif' }}>
               The Series
@@ -430,7 +433,46 @@ function Home() {
       })()}
     </Link>
   </section>
-  <section className="middleGrid"><Link to="/reading-ledger" className="panel linkCard"><h3>Recently Cataloged</h3>{recent.length === 0 && <p className="pageSubtitle">No recently cataloged books.</p>}<div className="coverRow">{recent.map((b) => <div key={b.id} className="mini"><BookCover label={b.title} coverUrl={b.coverUrl} small /><div className="caption">New</div></div>)}</div><h3 className="queueTitle">The Queue</h3>{queue.length === 0 && <p className="pageSubtitle">Your queue is empty.</p>}<div className="coverRow">{queue.slice(0, 5).map((b) => <div key={b.id} className="mini"><BookCover label={b.title} coverUrl={b.coverUrl} small /></div>)}</div></Link><Link to="/reading-ledger" className="panel linkCard timeline"><h3>The Annals</h3>{annals.length === 0 ? <p className="pageSubtitle">No reading history.</p> : Object.entries(homeAnnalsGrouped).sort((a,b)=>b[0]-a[0]).map(([year, books]) => <div key={year} style={{marginBottom:'12px'}}><div className="year" style={{marginBottom:'6px'}}>{year}</div>{books.map(b => <div key={b.id} className="entry" style={{marginBottom:'8px'}}>Finished {b.title} &middot; {new Date(b.finishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}</div>)}</div>)}</Link></section>
+  <section className="middleGrid">
+    <Link to="/queue" className="panel linkCard" state={{ from: '/' }}>
+      <h3>Recently Cataloged</h3>
+      {recent.length === 0 && <p className="pageSubtitle">No recently cataloged books.</p>}
+      <div className="coverRow">
+        {recent.map((b) => (
+          <div key={b.id} className="mini">
+            <BookCover label={b.title} coverUrl={b.coverUrl} small />
+            <div className="caption">New</div>
+          </div>
+        ))}
+      </div>
+      <h3 className="queueTitle">The Queue</h3>
+      {queue.length === 0 && <p className="pageSubtitle">Your queue is empty.</p>}
+      <div className="coverRow">
+        {queue.slice(0, 5).map((b) => (
+          <div key={b.id} className="mini">
+            <BookCover label={b.title} coverUrl={b.coverUrl} small />
+          </div>
+        ))}
+      </div>
+    </Link>
+    <Link to="/annals" className="panel linkCard timeline" state={{ from: '/' }}>
+      <h3>The Annals</h3>
+      {annals.length === 0 ? (
+        <p className="pageSubtitle">No reading history.</p>
+      ) : (
+        Object.entries(homeAnnalsGrouped).sort((a,b) => b[0] - a[0]).map(([year, books]) => (
+          <div key={year} style={{ marginBottom: '12px' }}>
+            <div className="year" style={{ marginBottom: '6px' }}>{year}</div>
+            {books.map(b => (
+              <div key={b.id} className="entry" style={{ marginBottom: '8px' }}>
+                Finished {b.title} &middot; {new Date(b.finishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}
+              </div>
+            ))}
+          </div>
+        ))
+      )}
+    </Link>
+  </section>
   <section className="bottomGrid"><Link to="/circulation" className="panel linkCard"><h3>The Circulation Desk</h3>{stacks.filter(b => b.status === 'On Loan').length === 0 ? <p className="pageSubtitle">No books currently on loan.</p> : stacks.filter(b => b.status === 'On Loan').map(b => <div key={b.id || b.title} className="bookCard"><BookCover label="On Loan" coverUrl={b.coverUrl} small /><div><h4>{b.title}</h4><p>{b.author}</p><div className="tags"><span className="tag-loan">On Loan to {b.borrower}</span>{b.dueAt && <span>Due {new Date(b.dueAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}</span>}</div></div></div>)}</Link><Link to="/departures" className="panel linkCard"><h3>The Ledger of Departures</h3>{recentDepartures.length === 0 && <p className="pageSubtitle">No departed books.</p>}{recentDepartures.map(d => <div key={d.title} className="bookCard"><BookCover label={d.status} coverUrl={d.coverUrl} small muted /><div><h4>{d.title}</h4><p>{d.status}</p><div className="tags"><span>Archived</span></div></div></div>)}</Link></section>
   <footer className="footerLinks" style={{ marginTop: '32px', padding: '16px 0', borderTop: '1px dashed var(--line)', width: '100%', textAlign: 'center', fontSize: '11px', color: 'var(--muted)', fontFamily: 'Inter, sans-serif' }}>
     © {new Date().getFullYear()} Benedict Library Scriptorium
@@ -508,19 +550,11 @@ function CirculationPage() {
     />
   );
 }
-function ReadingLedgerPage() {
+function QueuePage() {
   const navigate = useNavigate();
   const { queue, allBooks } = useLibrary();
   const [managing, setManaging] = React.useState(false);
   const [selected, setSelected] = React.useState(new Set());
-
-  const annals = allBooks.filter(b => b.finishedAt).sort((a,b) => new Date(b.finishedAt) - new Date(a.finishedAt));
-  const groupedAnnals = {};
-  annals.forEach(b => {
-    const year = new Date(b.finishedAt).getFullYear();
-    if (!groupedAnnals[year]) groupedAnnals[year] = [];
-    groupedAnnals[year].push(b);
-  });
 
   const toggleSelect = (id) => {
     if (!managing) return;
@@ -608,7 +642,7 @@ function ReadingLedgerPage() {
             ▼
           </button>
         </div>
-        <Link to={`/book/${q.id}`} style={{display: 'flex', gap: '14px', flex: '1 1 180px'}}>
+        <Link to={`/book/${q.id}`} state={{ from: '/queue' }} style={{display: 'flex', gap: '14px', flex: '1 1 180px'}}>
           <div className="detailCover"><BookCover label={q.title} coverUrl={q.coverUrl} small /></div>
           <div className="detailMeta">
             <h4 style={{color: 'var(--ink)'}}>{q.title}</h4>
@@ -638,13 +672,12 @@ function ReadingLedgerPage() {
     <Shell>
       <div className="pageView">
         <button type="button" className="backLink" onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'var(--blue)' }}>← Back</button>
-        <h2 className="pageTitle">The Reading Ledger</h2>
-        <p className="pageSubtitle">Queue and completed reading annals.</p>
+        <h2 className="pageTitle">The Reading Queue</h2>
+        <p className="pageSubtitle">Upcoming volumes and audiobooks scheduled for reading.</p>
         
-        <div className="ledgerGrid">
+        <div style={{ maxWidth: '640px', margin: '0 auto' }}>
           <section className="ledgerPanel">
             <div className="panelTop" style={{ flexDirection: 'column', gap: '8px', alignItems: 'center', width: '100%', marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '28px', margin: 0 }}>The Queue</h3>
               <div style={{display:'flex', gap:'8px', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', width: '100%'}}>
                 {managing ? (
                   <>
@@ -675,14 +708,34 @@ function ReadingLedgerPage() {
                 {audiobookQueue.map((q, index) => renderQueueItem(q, index, audiobookQueue))}
               </div>
             )}
-
-
           </section>
+        </div>
+      </div>
+    </Shell>
+  );
+}
 
+function AnnalsPage() {
+  const navigate = useNavigate();
+  const { allBooks } = useLibrary();
+
+  const annals = allBooks.filter(b => b.finishedAt).sort((a,b) => new Date(b.finishedAt) - new Date(a.finishedAt));
+  const groupedAnnals = {};
+  annals.forEach(b => {
+    const year = new Date(b.finishedAt).getFullYear();
+    if (!groupedAnnals[year]) groupedAnnals[year] = [];
+    groupedAnnals[year].push(b);
+  });
+
+  return (
+    <Shell>
+      <div className="pageView">
+        <button type="button" className="backLink" onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'var(--blue)' }}>← Back</button>
+        <h2 className="pageTitle">The Reading Annals</h2>
+        <p className="pageSubtitle">A historical chronicle of finished volumes.</p>
+        
+        <div style={{ maxWidth: '640px', margin: '0 auto' }}>
           <section className="ledgerPanel annalsPanel">
-            <div className="panelTop" style={{ justifyContent: 'center', marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '28px', margin: 0 }}>The Annals</h3>
-            </div>
             <div className="timelineBlock">
               {annals.length === 0 ? (
                 <p className="pageSubtitle">No history available.</p>
@@ -691,9 +744,11 @@ function ReadingLedgerPage() {
                   <div key={year} style={{marginBottom: "16px"}}>
                     <div className="year" style={{marginBottom: "8px"}}>{year}</div>
                     {books.map(b => (
-                      <div key={b.id} className="entry" style={{borderLeft: "2px solid var(--line)", paddingLeft: "10px", marginLeft: "4px", marginBottom: "8px"}}>
-                        Finished {b.title} &middot; {new Date(b.finishedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" })}
-                      </div>
+                      <Link to={`/book/${b.id}`} state={{ from: '/annals' }} key={b.id} style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+                        <div className="entry" style={{borderLeft: "2px solid var(--line)", paddingLeft: "10px", marginLeft: "4px", marginBottom: "8px", cursor: 'pointer', transition: 'color 0.2s' }}>
+                          Finished <strong>{b.title}</strong> &middot; {new Date(b.finishedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" })}
+                        </div>
+                      </Link>
                     ))}
                   </div>
                 ))
@@ -740,7 +795,8 @@ function BookPage() {
   if (fromPath.includes('/stacks')) backLabel = '← Back to The Stacks';
   else if (fromPath.includes('/archives')) backLabel = '← Back to The Archives';
   else if (fromPath.includes('/circulation')) backLabel = '← Back to Circulation';
-  else if (fromPath.includes('/reading-ledger')) backLabel = '← Back to Ledger';
+  else if (fromPath.includes('/queue')) backLabel = '← Back to Queue';
+  else if (fromPath.includes('/annals')) backLabel = '← Back to Annals';
   else if (fromPath.includes('/catalog')) backLabel = '← Back to Catalog';
   else if (fromPath === '/') backLabel = '← Back to Home';
 
@@ -1475,7 +1531,8 @@ export default function App() {
           <Route path="/stacks" element={<StacksPage />} />
           <Route path="/archives" element={<ArchivesPage />} />
           <Route path="/circulation" element={<CirculationPage />} />
-          <Route path="/reading-ledger" element={<ReadingLedgerPage />} />
+          <Route path="/queue" element={<QueuePage />} />
+          <Route path="/annals" element={<AnnalsPage />} />
           <Route path="/departures" element={<DeparturesPage />} />
           <Route path="/catalog" element={<CatalogPage />} />
           <Route path="/book/:id" element={<BookPage />} />
