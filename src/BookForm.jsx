@@ -459,7 +459,7 @@ export default function BookForm() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+            <div className="form-grid-2col">
               <div className="searchBar" style={{ margin: 0 }}>
                 <label style={{display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)'}}>Format Type</label>
                 <select name="type" value={formData.type} onChange={handleChange} style={{ width: '100%', border: '1px solid var(--line)', background: '#fffaf6', borderRadius: '999px', padding: '12px 16px', font: 'inherit', color: 'var(--ink)' }}>
@@ -488,7 +488,7 @@ export default function BookForm() {
             {formData.status === 'Wishlist' && (
               <div className="panel" style={{ display: 'grid', gap: '15px', background: '#fffcf7', border: '1px solid #d8c6ad', padding: '16px', borderRadius: '12px', marginTop: '10px' }}>
                 <h4 style={{ margin: 0, fontFamily: 'Cormorant Garamond, serif', fontSize: '18px', color: 'var(--blue)' }}>Acquisition Details (Wishlist)</h4>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '15px' }}>
+                <div className="form-grid-price-url">
                   <div className="searchBar" style={{ margin: 0 }}>
                     <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)' }}>Planned Price</label>
                     <input name="price" value={formData.price || ''} onChange={handleChange} placeholder="e.g. $19.99" />
@@ -505,7 +505,7 @@ export default function BookForm() {
               <div className="panel" style={{ display: 'grid', gap: '15px', background: '#fffcf7', border: '1px solid #d8c6ad', padding: '16px', borderRadius: '12px', marginTop: '10px' }}>
                 <h4 style={{ margin: 0, fontFamily: 'Cormorant Garamond, serif', fontSize: '18px', color: 'var(--blue)' }}>Lending Registry Details</h4>
                 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                <div className="form-grid-2col">
                   <div className="searchBar" style={{ margin: 0 }}>
                     <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)' }}>Borrower Name</label>
                     <input name="borrower" value={formData.borrower || ''} onChange={handleChange} list="borrowers-list" required placeholder="Who is borrowing this book?" />
@@ -559,7 +559,7 @@ export default function BookForm() {
               <input name="cataloged" value={formData.cataloged} onChange={handleChange} />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+            <div className="form-grid-2col">
               <div className="searchBar" style={{ margin: 0 }}>
                 <label style={{display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)'}}>Current Page</label>
                 <input type="number" name="currentPage" value={formData.currentPage ?? ''} onChange={handleChange} placeholder="e.g. 142" min="0" style={{ width: '100%', border: '1px solid var(--line)', background: '#fffaf6', borderRadius: '999px', padding: '12px 16px', font: 'inherit', color: 'var(--ink)' }} />
@@ -570,7 +570,7 @@ export default function BookForm() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+            <div className="form-grid-2col">
               <div className="searchBar" style={{ margin: 0 }}>
                 <label style={{display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)'}}>Date Started</label>
                 <input type="date" name="startedAt" value={formData.startedAt || ''} onChange={handleChange} style={{ width: '100%', border: '1px solid var(--line)', background: '#fffaf6', borderRadius: '999px', padding: '12px 16px', font: 'inherit', color: 'var(--ink)' }} />

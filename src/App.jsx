@@ -836,7 +836,7 @@ function BookPage() {
             <div>
               <textarea value={quoteText} onChange={e => setQuoteText(e.target.value)} required placeholder="Type the quote or passage here..." style={{ width: '100%', minHeight: '60px', border: '1px solid var(--line)', borderRadius: '8px', background: '#fffefb', padding: '8px 10px', font: 'inherit', color: 'var(--ink)', resize: 'vertical' }} />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '10px' }}>
+            <div className="form-grid-price-url" style={{ gap: '10px' }}>
               <input type="text" value={quotePage} onChange={e => setQuotePage(e.target.value)} placeholder="Page (e.g. 142)" style={{ width: '100%', border: '1px solid var(--line)', background: '#fffaf6', borderRadius: '999px', padding: '8px 12px', font: 'inherit', color: 'var(--ink)' }} />
               <input type="text" value={quoteNotes} onChange={e => setQuoteNotes(e.target.value)} placeholder="Notes / Theme (e.g. Socratic Wisdom)" style={{ width: '100%', border: '1px solid var(--line)', background: '#fffaf6', borderRadius: '999px', padding: '8px 12px', font: 'inherit', color: 'var(--ink)' }} />
             </div>
@@ -874,7 +874,7 @@ function BookPage() {
           {item.status === 'Currently Reading' && (
             <form onSubmit={handleLogSession} className="progressWrapper" style={{ borderStyle: 'dashed', padding: '16px', borderRadius: '12px', display: 'grid', gap: '10px', marginTop: '14px' }}>
               <h4 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '18px', margin: '0', color: 'var(--blue)' }}>Log a Reading Session</h4>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div className="form-grid-2col" style={{ gap: '10px' }}>
                 <div className="searchBar" style={{ margin: 0 }}>
                   <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--muted)' }}>Page Reached</label>
                   <input type="number" value={sessionPage} onChange={e => setSessionPage(e.target.value)} required min="0" placeholder="e.g. 150" style={{ width: '100%', border: '1px solid var(--line)', background: '#fffaf6', borderRadius: '999px', padding: '8px 12px', font: 'inherit', color: 'var(--ink)' }} />
