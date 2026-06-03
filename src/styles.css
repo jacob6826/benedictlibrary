@@ -23,38 +23,100 @@
 }
 
 /* Scriptorium Header and Theme Layout Enhancements */
+.menuToggleButton {
+  position: absolute;
+  top: 18px;
+  left: 22px;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--muted);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  user-select: none;
+  outline: none;
+  z-index: 1001;
+}
+.menuToggleButton:hover {
+  border-color: #b79f7b;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transform: translateY(-1px);
+}
+@media (max-width: 600px) {
+  .menuToggleButton {
+    left: 12px;
+    top: 12px;
+  }
+}
+
+.titleRow {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between !important;
+  width: 100%;
+  padding: 0 64px;
+  margin: 14px 0 6px 0 !important;
+  gap: 0 !important;
+  transition: all 0.3s ease;
+}
+
+.titleRow h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 80px !important;
+  line-height: 0.92;
+  margin: 0;
+  color: #394a67;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  text-align: center;
+  width: 100%;
+  transition: font-size 0.3s ease;
+}
+
 .headerCrest {
-  transition: transform 0.3s ease, filter 0.3s ease;
+  transition: transform 0.3s ease, filter 0.3s ease, width 0.3s ease, height 0.3s ease;
   overflow: visible;
   flex-shrink: 0;
   display: inline-block;
   align-self: center;
+  width: 80px;
+  height: 34px;
 }
 
-/* Desktop: h1 has font-size: 72px */
-@media (min-width: 1001px) {
+/* Tablet: title and crest scaling */
+@media (max-width: 1000px) {
+  .titleRow {
+    padding: 0 36px;
+  }
+  .titleRow h1 {
+    font-size: 58px !important;
+  }
   .headerCrest {
-    width: 114px;
-    height: 49px; /* exact shield height to match cap-height of 72px B */
-    transform: translateY(-2px); /* fine-tuned vertical offset to align perfectly with B baseline and cap height */
+    width: 60px;
+    height: 26px;
   }
 }
 
-/* Tablet: h1 has font-size: 54px */
-@media (max-width: 1000px) and (min-width: 801px) {
-  .headerCrest {
-    width: 86px;
-    height: 37px; /* exact shield height for 54px B */
-    transform: translateY(-1.5px);
+/* Mobile: push content down to avoid menu button overlay */
+@media (max-width: 600px) {
+  .titleRow {
+    padding: 0 16px;
+    margin-top: 40px !important;
   }
-}
-
-/* Mobile: h1 has font-size: 42px */
-@media (max-width: 800px) {
+  .titleRow h1 {
+    font-size: 32px !important;
+  }
   .headerCrest {
-    width: 67px;
-    height: 29px; /* exact shield height for 42px B */
-    transform: translateY(-1px);
+    width: 40px;
+    height: 17px;
   }
 }
 

@@ -44,7 +44,7 @@ export function Header() {
       <button 
         onClick={() => setMenuOpen(!menuOpen)} 
         title="Open Navigation" 
-        style={{ position: 'absolute', top: '18px', left: '22px', background: 'transparent', border: '1px solid var(--line)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '14px', color: 'var(--muted)', transition: 'all 0.2s', boxShadow: '0 2px 6px rgba(0,0,0,0.05)', userSelect: 'none', outline: 'none', zIndex: 1001 }}
+        className="menuToggleButton"
       >
         {menuOpen ? '✕' : '☰'}
       </button>
@@ -66,6 +66,11 @@ export function Header() {
             <Link to="/" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '18px', color: 'var(--ink)', padding: '4px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontWeight: 'bold', fontFamily: 'Cormorant Garamond, serif' }}>
               Homepage
             </Link>
+            {auth.currentUser && (
+              <Link to="/add-book" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '18px', color: 'var(--ink)', padding: '4px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Cormorant Garamond, serif' }}>
+                Add Book
+              </Link>
+            )}
             <Link to="/stacks" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '18px', color: 'var(--ink)', padding: '4px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Cormorant Garamond, serif' }}>
               The Stacks
             </Link>
@@ -118,12 +123,10 @@ export function Header() {
         </div>
       )}
 
-      {/* Benedict Library title flanked by two large shield crests and ornaments */}
-      <div className="titleRow" style={{ margin: '14px 0 6px 0', gap: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-        <span className="ornament" style={{ width: '10vw', maxWidth: '160px' }} />
-        
+      {/* Benedict Library title flanked by two large shield crests */}
+      <div className="titleRow">
         {/* Left Shield Crest (Scaled so rendered outline matches visual cap-height) */}
-        <svg viewBox="0 15 100 43" fill="none" className="headerCrest" style={{ color: 'var(--blue)', flexShrink: 0, overflow: 'visible' }}>
+        <svg viewBox="0 15 100 43" fill="none" className="headerCrest" style={{ color: 'var(--blue)', overflow: 'visible' }}>
           {/* Shield Outline */}
           <path d="M35 15H65V35C65 48 50 58 50 58C50 58 35 48 35 35V15Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
           {/* Laurel Wreaths */}
@@ -141,7 +144,7 @@ export function Header() {
         </Link>
 
         {/* Right Shield Crest (Scaled so rendered outline matches visual cap-height) */}
-        <svg viewBox="0 15 100 43" fill="none" className="headerCrest" style={{ color: 'var(--blue)', flexShrink: 0, overflow: 'visible' }}>
+        <svg viewBox="0 15 100 43" fill="none" className="headerCrest" style={{ color: 'var(--blue)', overflow: 'visible' }}>
           {/* Shield Outline */}
           <path d="M35 15H65V35C65 48 50 58 50 58C50 58 35 48 35 35V15Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
           {/* Laurel Wreaths */}
@@ -153,18 +156,10 @@ export function Header() {
           {/* Guiding Star */}
           <path d="M50 8L52 12L56 12L53 14L54 18L50 16L46 18L47 14L44 12L48 12L50 8Z" fill="currentColor"/>
         </svg>
-
-        <span className="ornament" style={{ width: '10vw', maxWidth: '160px' }} />
       </div>
 
       {/* Private Library subtitle kicker directly below */}
       <div className="studyKicker" style={{ marginTop: '4px' }}>Private Library</div>
-
-      {auth.currentUser && (
-        <div style={{ display: 'flex', gap: '10px', marginTop: '12px', marginBottom: '8px', alignItems: 'center' }}>
-          <Link to="/add-book" className="primaryBtn" style={{ cursor: 'pointer', fontSize: '10px', padding: '0 10px', border: 'none', display: 'inline-flex', alignItems: 'center', height: '22px', lineHeight: '1' }}>+ Add Book</Link>
-        </div>
-      )}
     </div>
   ); 
 }
