@@ -1657,7 +1657,7 @@ function ChallengePage() {
         </div>
         <p className="pageSubtitle">Track your reading milestones, pages accumulated, and finished works.</p>
         
-        <div className="ledgerGrid" style={{ gridTemplateColumns: '1fr 1.5fr', gap: '20px', marginTop: '20px' }}>
+        <div className="challengeGrid">
           
           {/* Progress Overview Panel */}
           <section className="ledgerPanel" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px 20px', minHeight: 'auto' }}>

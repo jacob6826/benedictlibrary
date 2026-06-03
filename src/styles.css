@@ -565,3 +565,17 @@ button.backLink {
   display: none !important;
 }
 
+/* Reading Challenge Page Responsive Grid */
+.challengeGrid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 20px;
+  margin-top: 20px;
+}
+@media (max-width: 800px) {
+  .challengeGrid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+}
+
