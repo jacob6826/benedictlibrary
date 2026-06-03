@@ -49,15 +49,6 @@ export function Header() {
         {menuOpen ? '✕' : '☰'}
       </button>
 
-      {/* Theme Toggle Button */}
-      <button 
-        onClick={toggleTheme} 
-        title="Toggle Theme" 
-        style={{ position: 'absolute', top: '18px', right: '22px', background: 'transparent', border: '1px solid var(--line)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '16px', color: 'var(--muted)', transition: 'all 0.2s', boxShadow: '0 2px 6px rgba(0,0,0,0.05)', userSelect: 'none', outline: 'none', zIndex: 10 }}
-      >
-        {isDark ? '☀️' : '🌙'}
-      </button>
-
       {/* Slide-out Menu Drawer Overlay */}
       {menuOpen && (
         <div 
@@ -65,60 +56,60 @@ export function Header() {
           onClick={() => setMenuOpen(false)}
         >
           <div 
-            style={{ width: '280px', height: '100%', backgroundColor: 'var(--bg)', borderRight: '1px solid var(--line)', padding: '64px 24px 30px', display: 'flex', flexDirection: 'column', gap: '14px', boxShadow: '10px 0 30px rgba(0,0,0,0.12)', animation: 'slideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1)', textAlign: 'left' }}
+            style={{ width: '280px', height: '100%', backgroundColor: 'var(--bg)', borderRight: '1px solid var(--line)', padding: '36px 20px 20px', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto', boxShadow: '10px 0 30px rgba(0,0,0,0.12)', animation: 'slideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1)', textAlign: 'left' }}
             onClick={e => e.stopPropagation()}
           >
             <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '26px', fontWeight: 'bold', color: 'var(--blue)', borderBottom: '1px dashed var(--line)', paddingBottom: '10px', marginBottom: '8px' }}>
               Library Scriptorium
             </div>
             
-            <Link to="/" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontWeight: 'bold', fontFamily: 'Inter, sans-serif' }}>
+            <Link to="/" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '18px', color: 'var(--ink)', padding: '4px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontWeight: 'bold', fontFamily: 'Cormorant Garamond, serif' }}>
               Homepage
             </Link>
-            <Link to="/stacks" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
+            <Link to="/stacks" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '18px', color: 'var(--ink)', padding: '4px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Cormorant Garamond, serif' }}>
               The Stacks
             </Link>
-            <Link to="/archives" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
+            <Link to="/archives" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '18px', color: 'var(--ink)', padding: '4px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Cormorant Garamond, serif' }}>
               The Archives
             </Link>
-            <Link to="/circulation" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
+            <Link to="/circulation" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '18px', color: 'var(--ink)', padding: '4px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Cormorant Garamond, serif' }}>
               Circulation Desk
             </Link>
-            <Link to="/reading-ledger" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
+            <Link to="/reading-ledger" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '18px', color: 'var(--ink)', padding: '4px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Cormorant Garamond, serif' }}>
               Reading Ledger
             </Link>
-            <Link to="/series" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
+            <Link to="/series" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '18px', color: 'var(--ink)', padding: '4px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Cormorant Garamond, serif' }}>
               The Series
             </Link>
-            <Link to="/catalog" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
+            <Link to="/catalog" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '18px', color: 'var(--ink)', padding: '4px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Cormorant Garamond, serif' }}>
               Catalog Ledger
             </Link>
-            <Link to="/insights" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
+            <Link to="/insights" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '18px', color: 'var(--ink)', padding: '4px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Cormorant Garamond, serif' }}>
               Library Insights
             </Link>
-            <Link to="/commonplace" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
+            <Link to="/commonplace" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '18px', color: 'var(--ink)', padding: '4px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Cormorant Garamond, serif' }}>
               Commonplace Book
             </Link>
-            <Link to="/wishlist" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
+            <Link to="/wishlist" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '18px', color: 'var(--ink)', padding: '4px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Cormorant Garamond, serif' }}>
               Wishlist Ledger
             </Link>
-            <Link to="/challenge" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
+            <Link to="/challenge" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '18px', color: 'var(--ink)', padding: '4px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Cormorant Garamond, serif' }}>
               Reading Challenge
             </Link>
-            <Link to="/departures" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
+            <Link to="/departures" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '18px', color: 'var(--ink)', padding: '4px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Cormorant Garamond, serif' }}>
               Past Departures
             </Link>
             
-            <div style={{ marginTop: 'auto', borderTop: '1px solid var(--line)', paddingTop: '14px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ marginTop: 'auto', borderTop: '1px solid var(--line)', paddingTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <button 
                 onClick={toggleTheme} 
-                style={{ background: 'none', border: 'none', font: 'inherit', cursor: 'pointer', padding: 0, color: 'var(--muted)', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '10px', fontFamily: 'Inter, sans-serif', width: '100%', textAlign: 'left' }}
+                style={{ background: 'none', border: 'none', font: 'inherit', cursor: 'pointer', padding: 0, color: 'var(--muted)', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '10px', fontFamily: 'Cormorant Garamond, serif', width: '100%', textAlign: 'left' }}
               >
                 {isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               </button>
               <button 
                 onClick={() => { setMenuOpen(false); signOut(auth); }} 
-                style={{ background: 'none', border: 'none', font: 'inherit', cursor: 'pointer', padding: 0, color: 'var(--muted)', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '10px', fontFamily: 'Inter, sans-serif', width: '100%', textAlign: 'left' }}
+                style={{ background: 'none', border: 'none', font: 'inherit', cursor: 'pointer', padding: 0, color: 'var(--muted)', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '10px', fontFamily: 'Cormorant Garamond, serif', width: '100%', textAlign: 'left' }}
               >
                 Log Out Access
               </button>
