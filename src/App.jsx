@@ -73,48 +73,54 @@ export function Header() {
             </div>
             
             <Link to="/" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontWeight: 'bold', fontFamily: 'Inter, sans-serif' }}>
-              🏠 Homepage
+              Homepage
             </Link>
             <Link to="/stacks" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
-              📚 The Stacks
+              The Stacks
             </Link>
             <Link to="/archives" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
-              💾 The Archives
+              The Archives
             </Link>
             <Link to="/circulation" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
-              🔄 Circulation Desk
+              Circulation Desk
             </Link>
             <Link to="/reading-ledger" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
-              📑 Reading Ledger
+              Reading Ledger
             </Link>
             <Link to="/series" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
-              🔗 The Series
+              The Series
             </Link>
             <Link to="/catalog" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
-              📇 Catalog Ledger
+              Catalog Ledger
             </Link>
             <Link to="/insights" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
-              📈 Library Insights
+              Library Insights
             </Link>
             <Link to="/commonplace" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
-              🖋️ Commonplace Book
+              Commonplace Book
             </Link>
             <Link to="/wishlist" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
-              ✨ Wishlist Ledger
+              Wishlist Ledger
             </Link>
             <Link to="/challenge" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
-              🏆 Reading Challenge
+              Reading Challenge
             </Link>
             <Link to="/departures" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
-              🚪 Past Departures
+              Past Departures
             </Link>
             
-            <div style={{ marginTop: 'auto', borderTop: '1px solid var(--line)', paddingTop: '14px' }}>
+            <div style={{ marginTop: 'auto', borderTop: '1px solid var(--line)', paddingTop: '14px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <button 
+                onClick={toggleTheme} 
+                style={{ background: 'none', border: 'none', font: 'inherit', cursor: 'pointer', padding: 0, color: 'var(--muted)', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '10px', fontFamily: 'Inter, sans-serif', width: '100%', textAlign: 'left' }}
+              >
+                {isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              </button>
               <button 
                 onClick={() => { setMenuOpen(false); signOut(auth); }} 
-                style={{ background: 'none', border: 'none', font: 'inherit', cursor: 'pointer', padding: 0, color: 'var(--muted)', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '10px', fontFamily: 'Inter, sans-serif', width: '100%' }}
+                style={{ background: 'none', border: 'none', font: 'inherit', cursor: 'pointer', padding: 0, color: 'var(--muted)', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '10px', fontFamily: 'Inter, sans-serif', width: '100%', textAlign: 'left' }}
               >
-                🚪 Log Out Access
+                Log Out Access
               </button>
             </div>
           </div>
