@@ -40,15 +40,7 @@ export function Header() {
   const handleLogout = () => { if (auth.currentUser) signOut(auth); };
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', position: 'relative', padding: '10px 0 16px' }}>
-      {/* Menu Drawer Toggle Button */}
-      <button 
-        onClick={() => setMenuOpen(!menuOpen)} 
-        title="Open Navigation" 
-        className="menuToggleButton"
-      >
-        {menuOpen ? '✕' : '☰'}
-      </button>
-
+      
       {/* Slide-out Menu Drawer Overlay */}
       {menuOpen && (
         <div 
@@ -160,6 +152,15 @@ export function Header() {
 
       {/* Private Library subtitle kicker directly below */}
       <div className="studyKicker" style={{ marginTop: '4px' }}>Private Library</div>
+
+      {/* Menu Drawer Toggle Button */}
+      <button 
+        onClick={() => setMenuOpen(!menuOpen)} 
+        title="Open Navigation" 
+        className="menuToggleButton"
+      >
+        {menuOpen ? '✕' : '☰'}
+      </button>
     </div>
   ); 
 }
