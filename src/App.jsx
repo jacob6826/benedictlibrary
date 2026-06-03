@@ -24,6 +24,8 @@ function BookCover({ label, small, muted, coverUrl }) {
 export function Header() { 
   const [isDark, setIsDark] = React.useState(document.body.classList.contains('dark-mode'));
   const [menuOpen, setMenuOpen] = React.useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
   
   const toggleTheme = () => {
     if (document.body.classList.contains('dark-mode')) {
@@ -38,6 +40,22 @@ export function Header() {
   };
 
   const handleLogout = () => { if (auth.currentUser) signOut(auth); };
+
+  let backLabel = '← Back';
+  if (location.pathname.startsWith('/book/')) {
+    const fromPath = location.state?.from || '';
+    if (fromPath.includes('/stacks')) backLabel = '← Back to The Stacks';
+    else if (fromPath.includes('/archives')) backLabel = '← Back to The Archives';
+    else if (fromPath.includes('/circulation')) backLabel = '← Back to Circulation';
+    else if (fromPath.includes('/queue')) backLabel = '← Back to Queue';
+    else if (fromPath.includes('/annals')) backLabel = '← Back to Annals';
+    else if (fromPath.includes('/catalog')) backLabel = '← Back to Catalog';
+    else if (fromPath === '/') backLabel = '← Back to Home';
+  } else if (location.pathname.startsWith('/edit-book/')) {
+    backLabel = '← Cancel';
+  } else if (location.pathname === '/add-book') {
+    backLabel = '← Cancel';
+  }
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', position: 'relative', padding: '10px 0 16px' }}>
       
@@ -156,14 +174,37 @@ export function Header() {
       {/* Private Library subtitle kicker directly below */}
       <div className="studyKicker" style={{ marginTop: '4px' }}>Private Library</div>
 
-      {/* Menu Drawer Toggle Button */}
-      <button 
-        onClick={() => setMenuOpen(!menuOpen)} 
-        title="Open Navigation" 
-        className="menuToggleButton"
+      {/* Row containing Back Button and Menu Button */}
+      <div 
+        className="headerControlsRow" 
+        style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          width: '100%', 
+          position: 'relative', 
+          minHeight: '36px', 
+          marginTop: '10px', 
+          marginBottom: '8px' 
+        }}
       >
-        {menuOpen ? '✕' : '☰'}
-      </button>
+        {location.pathname !== '/' && (
+          <button 
+            onClick={() => navigate(-1)} 
+            className="headerBackLink"
+          >
+            {backLabel}
+          </button>
+        )}
+        <button 
+          onClick={() => setMenuOpen(!menuOpen)} 
+          title="Open Navigation" 
+          className="menuToggleButton"
+          style={{ margin: 0 }}
+        >
+          {menuOpen ? '✕' : '☰'}
+        </button>
+      </div>
     </div>
   ); 
 }
