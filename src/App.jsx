@@ -23,6 +23,7 @@ function BookCover({ label, small, muted, coverUrl }) {
 
 export function Header() { 
   const [isDark, setIsDark] = React.useState(document.body.classList.contains('dark-mode'));
+  const [menuOpen, setMenuOpen] = React.useState(false);
   
   const toggleTheme = () => {
     if (document.body.classList.contains('dark-mode')) {
@@ -39,6 +40,16 @@ export function Header() {
   const handleLogout = () => { if (auth.currentUser) signOut(auth); };
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', position: 'relative', padding: '10px 0 16px' }}>
+      {/* Menu Drawer Toggle Button */}
+      <button 
+        onClick={() => setMenuOpen(!menuOpen)} 
+        title="Open Navigation" 
+        style={{ position: 'absolute', top: '18px', left: '22px', background: 'transparent', border: '1px solid var(--line)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '14px', color: 'var(--muted)', transition: 'all 0.2s', boxShadow: '0 2px 6px rgba(0,0,0,0.05)', userSelect: 'none', outline: 'none', zIndex: 1001 }}
+      >
+        {menuOpen ? '✕' : '☰'}
+      </button>
+
+      {/* Theme Toggle Button */}
       <button 
         onClick={toggleTheme} 
         title="Toggle Theme" 
@@ -46,6 +57,69 @@ export function Header() {
       >
         {isDark ? '☀️' : '🌙'}
       </button>
+
+      {/* Slide-out Menu Drawer Overlay */}
+      {menuOpen && (
+        <div 
+          style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', animation: 'fadeIn 0.2s ease-out' }}
+          onClick={() => setMenuOpen(false)}
+        >
+          <div 
+            style={{ width: '280px', height: '100%', backgroundColor: 'var(--bg)', borderRight: '1px solid var(--line)', padding: '64px 24px 30px', display: 'flex', flexDirection: 'column', gap: '14px', boxShadow: '10px 0 30px rgba(0,0,0,0.12)', animation: 'slideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1)', textAlign: 'left' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '26px', fontWeight: 'bold', color: 'var(--blue)', borderBottom: '1px dashed var(--line)', paddingBottom: '10px', marginBottom: '8px' }}>
+              Library Scriptorium
+            </div>
+            
+            <Link to="/" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontWeight: 'bold', fontFamily: 'Inter, sans-serif' }}>
+              🏠 Homepage
+            </Link>
+            <Link to="/stacks" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
+              📚 The Stacks
+            </Link>
+            <Link to="/archives" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
+              💾 The Archives
+            </Link>
+            <Link to="/circulation" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
+              🔄 Circulation Desk
+            </Link>
+            <Link to="/reading-ledger" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
+              📑 Reading Ledger
+            </Link>
+            <Link to="/series" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
+              🔗 The Series
+            </Link>
+            <Link to="/catalog" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
+              📇 Catalog Ledger
+            </Link>
+            <Link to="/insights" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
+              📈 Library Insights
+            </Link>
+            <Link to="/commonplace" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
+              🖋️ Commonplace Book
+            </Link>
+            <Link to="/wishlist" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
+              ✨ Wishlist Ledger
+            </Link>
+            <Link to="/challenge" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
+              🏆 Reading Challenge
+            </Link>
+            <Link to="/departures" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '15px', color: 'var(--ink)', padding: '10px 0', borderBottom: '1px solid rgba(0,0,0,0.02)', fontFamily: 'Inter, sans-serif' }}>
+              🚪 Past Departures
+            </Link>
+            
+            <div style={{ marginTop: 'auto', borderTop: '1px solid var(--line)', paddingTop: '14px' }}>
+              <button 
+                onClick={() => { setMenuOpen(false); signOut(auth); }} 
+                style={{ background: 'none', border: 'none', font: 'inherit', cursor: 'pointer', padding: 0, color: 'var(--muted)', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '10px', fontFamily: 'Inter, sans-serif', width: '100%' }}
+              >
+                🚪 Log Out Access
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Benedict Library title flanked by two large shield crests and ornaments */}
       <div className="titleRow" style={{ margin: '14px 0 6px 0', gap: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
@@ -365,7 +439,9 @@ function Home() {
   </section>
   <section className="middleGrid"><Link to="/reading-ledger" className="panel linkCard"><h3>Recently Cataloged</h3>{recent.length === 0 && <p className="pageSubtitle">No recently cataloged books.</p>}<div className="coverRow">{recent.map((b) => <div key={b.id} className="mini"><BookCover label={b.title} coverUrl={b.coverUrl} small /><div className="caption">New</div></div>)}</div><h3 className="queueTitle">The Queue</h3>{queue.length === 0 && <p className="pageSubtitle">Your queue is empty.</p>}<div className="coverRow">{queue.slice(0, 5).map((b) => <div key={b.id} className="mini"><BookCover label={b.title} coverUrl={b.coverUrl} small /></div>)}</div></Link><Link to="/reading-ledger" className="panel linkCard timeline"><h3>The Annals</h3>{annals.length === 0 ? <p className="pageSubtitle">No reading history.</p> : Object.entries(homeAnnalsGrouped).sort((a,b)=>b[0]-a[0]).map(([year, books]) => <div key={year} style={{marginBottom:'12px'}}><div className="year" style={{marginBottom:'6px'}}>{year}</div>{books.map(b => <div key={b.id} className="entry" style={{marginBottom:'8px'}}>Finished {b.title} &middot; {new Date(b.finishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}</div>)}</div>)}</Link></section>
   <section className="bottomGrid"><Link to="/circulation" className="panel linkCard"><h3>The Circulation Desk</h3>{stacks.filter(b => b.status === 'On Loan').length === 0 ? <p className="pageSubtitle">No books currently on loan.</p> : stacks.filter(b => b.status === 'On Loan').map(b => <div key={b.id || b.title} className="bookCard"><BookCover label="On Loan" coverUrl={b.coverUrl} small /><div><h4>{b.title}</h4><p>{b.author}</p><div className="tags"><span className="tag-loan">On Loan to {b.borrower}</span>{b.dueAt && <span>Due {new Date(b.dueAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}</span>}</div></div></div>)}</Link><Link to="/departures" className="panel linkCard"><h3>The Ledger of Departures</h3>{recentDepartures.length === 0 && <p className="pageSubtitle">No departed books.</p>}{recentDepartures.map(d => <div key={d.title} className="bookCard"><BookCover label={d.status} coverUrl={d.coverUrl} small muted /><div><h4>{d.title}</h4><p>{d.status}</p><div className="tags"><span>Archived</span></div></div></div>)}</Link></section>
-  <footer className="footerLinks"><Link to="/circulation">Circulation Desk</Link><Link to="/series">The Series</Link><Link to="/catalog">Catalog Ledger</Link><Link to="/insights">Library Insights</Link><Link to="/commonplace">Commonplace Book</Link><Link to="/wishlist">Wishlist Ledger</Link><Link to="/departures">Past Departures</Link>{auth.currentUser && <button onClick={() => signOut(auth)} style={{ background: 'none', border: 'none', font: 'inherit', cursor: 'pointer', padding: 0, color: 'inherit', textDecoration: 'none', whiteSpace: 'nowrap' }}>Log Out</button>}</footer>
+  <footer className="footerLinks" style={{ marginTop: '32px', padding: '16px 0', borderTop: '1px dashed var(--line)', width: '100%', textAlign: 'center', fontSize: '11px', color: 'var(--muted)', fontFamily: 'Inter, sans-serif' }}>
+    © {new Date().getFullYear()} Benedict Library Scriptorium
+  </footer>
 </Shell>) }
 
 function BookCard({ item }) { 
