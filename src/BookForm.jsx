@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Html5Qrcode } from 'html5-qrcode';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { doc, getDoc, setDoc, addDoc, collection, deleteDoc } from 'firebase/firestore';
 import { db } from './firebase';
@@ -53,6 +54,144 @@ export default function BookForm() {
   const [fetchingCover, setFetchingCover] = useState(false);
   const [showOtherLocation, setShowOtherLocation] = useState(false);
   const [showOtherSeries, setShowOtherSeries] = useState(false);
+  
+  // Barcode scanner states
+  const [scanning, setScanning] = useState(false);
+  const [scanner, setScanner] = useState(null);
+
+  // Clean up scanner camera stream on component unmount
+  useEffect(() => {
+    return () => {
+      if (scanner) {
+        scanner.stop().catch(err => console.error("Error stopping scanner on unmount:", err));
+      }
+    };
+  }, [scanner]);
+
+  const startScanner = () => {
+    setScanning(true);
+    // Give DOM a millisecond to render the scanner container div
+    setTimeout(() => {
+      const html5QrCode = new Html5Qrcode("scanner-reader");
+      setScanner(html5QrCode);
+      
+      html5QrCode.start(
+        { facingMode: "environment" }, // Rear camera
+        {
+          fps: 10,
+          qrbox: { width: 260, height: 160 } // Optimized rectangle bounding box for 1D barcodes
+        },
+        (decodedText) => {
+          // Barcode detected successfully
+          handleBarcodeDecoded(decodedText, html5QrCode);
+        },
+        (errorMessage) => {
+          // Verbose frame decoding errors can be ignored
+        }
+      ).catch(err => {
+        alert("Camera access denied or device error: " + err);
+        setScanning(false);
+        setScanner(null);
+      });
+    }, 100);
+  };
+
+  const stopScanner = () => {
+    if (scanner) {
+      scanner.stop().then(() => {
+        setScanner(null);
+        setScanning(false);
+      }).catch(err => {
+        console.error("Failed to stop scanner cleanly:", err);
+        setScanning(false);
+      });
+    } else {
+      setScanning(false);
+    }
+  };
+
+  const handleBarcodeDecoded = async (isbnCode, qrScannerInstance) => {
+    const cleanIsbn = isbnCode.trim().replace(/-/g, '');
+    if (!cleanIsbn) return;
+    
+    // Stop the scanner stream immediately to prevent duplicate runs
+    if (qrScannerInstance) {
+      try {
+        await qrScannerInstance.stop();
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    setScanning(false);
+    setScanner(null);
+    
+    // Fetch details
+    await handleFetchMetadataByIsbn(cleanIsbn);
+  };
+
+  const handleFetchMetadataByIsbn = async (cleanIsbn) => {
+    setFetchingCover(true);
+    try {
+      let title = '';
+      let author = '';
+      let pageCount = '';
+      let coverUrl = '';
+      let description = '';
+
+      // 1. Google Books API query
+      const gbRes = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${cleanIsbn}&maxResults=1`);
+      if (gbRes.ok) {
+        const gbData = await gbRes.json();
+        if (gbData.items && gbData.items.length > 0) {
+          const info = gbData.items[0].volumeInfo;
+          title = info.title || '';
+          if (info.subtitle) title += `: ${info.subtitle}`;
+          author = info.authors ? info.authors.join(', ') : '';
+          pageCount = info.pageCount ? String(info.pageCount) : '';
+          coverUrl = info.imageLinks?.thumbnail ? info.imageLinks.thumbnail.replace('http:', 'https:') : '';
+          description = info.description || '';
+        }
+      }
+
+      // 2. Open Library API fallback
+      if (!title) {
+        const olRes = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${cleanIsbn}&format=json&jscmd=data`);
+        if (olRes.ok) {
+          const olData = await olRes.json();
+          const bookKey = `ISBN:${cleanIsbn}`;
+          if (olData[bookKey]) {
+            const book = olData[bookKey];
+            title = book.title || '';
+            author = book.authors ? book.authors.map(a => a.name).join(', ') : '';
+            pageCount = book.number_of_pages ? String(book.number_of_pages) : '';
+            coverUrl = book.cover?.large || book.cover?.medium || '';
+            description = book.notes || '';
+          }
+        }
+      }
+
+      if (title) {
+        setFormData(prev => ({
+          ...prev,
+          title: title || prev.title,
+          author: author || prev.author,
+          isbn: cleanIsbn,
+          totalPages: pageCount || prev.totalPages,
+          coverUrl: coverUrl || prev.coverUrl,
+          provenance: description ? `Automatic Import: ${description}\n\n${prev.provenance}` : prev.provenance
+        }));
+        alert(`Successfully scanned and loaded details for: "${title}"`);
+      } else {
+        setFormData(prev => ({ ...prev, isbn: cleanIsbn }));
+        alert(`Scanned ISBN: ${cleanIsbn}, but no cataloged book details were found online. The ISBN has been auto-filled.`);
+      }
+    } catch (err) {
+      console.error(err);
+      setFormData(prev => ({ ...prev, isbn: cleanIsbn }));
+      alert(`Scanned ISBN: ${cleanIsbn}, but an error occurred fetching details. The ISBN has been auto-filled.`);
+    }
+    setFetchingCover(false);
+  };
 
   const allLocations = Array.from(new Set([
     'Living Room Shelf', 
@@ -232,10 +371,43 @@ export default function BookForm() {
               <input name="author" value={formData.author} onChange={handleChange} required />
             </div>
 
-            <div className="searchBar" style={{ margin: 0 }}>
-              <label style={{display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)'}}>ISBN (Optional - highly recommended for accurate covers)</label>
-              <input name="isbn" value={formData.isbn || ''} onChange={handleChange} placeholder="e.g. 9780143127550" />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '10px', alignItems: 'end' }}>
+              <div className="searchBar" style={{ margin: 0 }}>
+                <label style={{display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)'}}>ISBN (Optional - scans physical barcode)</label>
+                <input name="isbn" value={formData.isbn || ''} onChange={handleChange} placeholder="e.g. 9780143127550" />
+              </div>
+              <button 
+                type="button" 
+                onClick={scanning ? stopScanner : startScanner}
+                style={{ 
+                  height: '42px',
+                  padding: '0 16px',
+                  borderRadius: '999px',
+                  background: scanning ? '#a05252' : 'var(--blue)',
+                  color: '#fff',
+                  border: 'none',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  outline: 'none',
+                  userSelect: 'none'
+                }}
+              >
+                📷 {scanning ? 'Stop Scan' : 'Scan Barcode'}
+              </button>
             </div>
+
+            {scanning && (
+              <div className="panel" style={{ background: '#000', padding: '12px', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--line)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div id="scanner-reader" style={{ width: '100%', maxWidth: '360px', background: '#000' }}></div>
+                <div style={{ textAlign: 'center', color: '#8ea6d2', fontSize: '11px', marginTop: '8px', fontWeight: 'bold' }}>
+                  Center the book's barcode inside the frame.
+                </div>
+              </div>
+            )}
 
             <div className="searchBar" style={{ margin: 0 }}>
               <label style={{display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--muted)'}}>Rating</label>

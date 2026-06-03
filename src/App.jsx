@@ -9,11 +9,11 @@ if (localStorage.getItem('theme') === 'dark') {
 
 import { auth, db } from './firebase'
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth'
-import { collection, onSnapshot, query, writeBatch, doc, updateDoc } from 'firebase/firestore'
+import { collection, onSnapshot, query, writeBatch, doc, updateDoc, setDoc } from 'firebase/firestore'
 import BookForm from './BookForm'
 import GoodreadsImporter from './GoodreadsImporter'
 
-const BookContext = React.createContext({ stacks:[], archives:[], departures:[], queue:[], recent:[], allBooks:[] });
+const BookContext = React.createContext({ stacks:[], archives:[], departures:[], queue:[], recent:[], allBooks:[], challengeGoal: 20, challengeGoalLoading: true });
 export function useLibrary() { return React.useContext(BookContext); }
 
 function BookCover({ label, small, muted, coverUrl }) { 
@@ -100,7 +100,7 @@ export function Header() {
 function Shell({ children }) { return <div className="page" style={{ position: 'relative' }}><Header />{children}</div> }
 
 function Home() { 
-  const { stacks, archives, departures, queue, recent, allBooks } = useLibrary();
+  const { stacks, archives, departures, queue, recent, allBooks, challengeGoal } = useLibrary();
   const currentlyReading = allBooks.find(b => b.status === 'Currently Reading');
   const annals = allBooks.filter(b => b.finishedAt).sort((a,b) => new Date(b.finishedAt) - new Date(a.finishedAt)).slice(0, 8);
   const homeAnnalsGrouped = annals.reduce((acc, b) => { const y = new Date(b.finishedAt).getFullYear(); acc[y] = acc[y] || []; acc[y].push(b); return acc; }, {});
@@ -315,7 +315,54 @@ function Home() {
       </div>
     )}
   </section>
-  <section className="plaqueGrid"><Link to="/stacks" className="plaque linkCard"><h3>The Stacks</h3><div className="count">{stacks.length} Physical Volumes</div><p>Active physical holdings, on shelves or on loan.</p></Link><Link to="/archives" className="plaque linkCard"><h3>The Archives</h3><div className="count">{archives.length} Digital Volumes</div><p>Cataloged ebooks and audiobooks.</p></Link></section>
+  <section className="plaqueGrid">
+    <Link to="/stacks" className="plaque linkCard">
+      <h3>The Stacks</h3>
+      <div className="count">{stacks.length} Physical Volumes</div>
+      <p>Active physical holdings, on shelves or on loan.</p>
+    </Link>
+    <Link to="/archives" className="plaque linkCard">
+      <h3>The Archives</h3>
+      <div className="count">{archives.length} Digital Volumes</div>
+      <p>Cataloged ebooks and audiobooks.</p>
+    </Link>
+    <Link to="/challenge" className="plaque linkCard" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      <h3>The Challenge</h3>
+      {(() => {
+        const currentYear = new Date().getFullYear();
+        const completedThisYear = allBooks.filter(b => {
+          if (!b.finishedAt) return false;
+          const finishYear = new Date(b.finishedAt).getFullYear();
+          return finishYear === currentYear;
+        });
+        const completedCount = completedThisYear.length;
+        const totalPagesRead = completedThisYear.reduce((sum, b) => {
+          const pages = parseInt(b.totalPages, 10);
+          return isNaN(pages) ? sum : sum + pages;
+        }, 0);
+        const pct = challengeGoal > 0 ? Math.min(100, Math.round((completedCount / challengeGoal) * 100)) : 0;
+        
+        const r = 20;
+        const circ = r * 2 * Math.PI;
+        const offset = circ - (pct / 100) * circ;
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px', width: '100%', justifyContent: 'center' }}>
+            <div style={{ position: 'relative', width: '40px', height: '40px', flexShrink: 0 }}>
+              <svg height="40" width="40" style={{ transform: 'rotate(-90deg)', overflow: 'visible' }}>
+                <circle stroke="rgba(0,0,0,0.06)" fill="transparent" strokeWidth="3" r={r} cx="20" cy="20" />
+                <circle stroke="var(--blue)" fill="transparent" strokeWidth="3" strokeDasharray={`${circ} ${circ}`} style={{ strokeDashoffset: offset, transition: 'stroke-dashoffset 0.35s' }} strokeLinecap="round" r={r} cx="20" cy="20" />
+              </svg>
+              <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 'bold', color: 'var(--blue)' }}>{pct}%</div>
+            </div>
+            <div style={{ textAlign: 'left' }}>
+              <div className="count" style={{ fontSize: '13px', margin: 0, whiteSpace: 'nowrap' }}>{completedCount} / {challengeGoal} Finished</div>
+              <p style={{ margin: 0, fontSize: '9px', color: 'var(--muted)', whiteSpace: 'nowrap' }}>{totalPagesRead.toLocaleString()} pages compiled</p>
+            </div>
+          </div>
+        );
+      })()}
+    </Link>
+  </section>
   <section className="middleGrid"><Link to="/reading-ledger" className="panel linkCard"><h3>Recently Cataloged</h3>{recent.length === 0 && <p className="pageSubtitle">No recently cataloged books.</p>}<div className="coverRow">{recent.map((b) => <div key={b.id} className="mini"><BookCover label={b.title} coverUrl={b.coverUrl} small /><div className="caption">New</div></div>)}</div><h3 className="queueTitle">The Queue</h3>{queue.length === 0 && <p className="pageSubtitle">Your queue is empty.</p>}<div className="coverRow">{queue.slice(0, 5).map((b) => <div key={b.id} className="mini"><BookCover label={b.title} coverUrl={b.coverUrl} small /></div>)}</div></Link><Link to="/reading-ledger" className="panel linkCard timeline"><h3>The Annals</h3>{annals.length === 0 ? <p className="pageSubtitle">No reading history.</p> : Object.entries(homeAnnalsGrouped).sort((a,b)=>b[0]-a[0]).map(([year, books]) => <div key={year} style={{marginBottom:'12px'}}><div className="year" style={{marginBottom:'6px'}}>{year}</div>{books.map(b => <div key={b.id} className="entry" style={{marginBottom:'8px'}}>Finished {b.title} &middot; {new Date(b.finishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}</div>)}</div>)}</Link></section>
   <section className="bottomGrid"><Link to="/circulation" className="panel linkCard"><h3>The Circulation Desk</h3>{stacks.filter(b => b.status === 'On Loan').length === 0 ? <p className="pageSubtitle">No books currently on loan.</p> : stacks.filter(b => b.status === 'On Loan').map(b => <div key={b.id || b.title} className="bookCard"><BookCover label="On Loan" coverUrl={b.coverUrl} small /><div><h4>{b.title}</h4><p>{b.author}</p><div className="tags"><span className="tag-loan">On Loan to {b.borrower}</span>{b.dueAt && <span>Due {new Date(b.dueAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}</span>}</div></div></div>)}</Link><Link to="/departures" className="panel linkCard"><h3>The Ledger of Departures</h3>{recentDepartures.length === 0 && <p className="pageSubtitle">No departed books.</p>}{recentDepartures.map(d => <div key={d.title} className="bookCard"><BookCover label={d.status} coverUrl={d.coverUrl} small muted /><div><h4>{d.title}</h4><p>{d.status}</p><div className="tags"><span>Archived</span></div></div></div>)}</Link></section>
   <footer className="footerLinks"><Link to="/circulation">Circulation Desk</Link><Link to="/series">The Series</Link><Link to="/catalog">Catalog Ledger</Link><Link to="/insights">Library Insights</Link><Link to="/commonplace">Commonplace Book</Link><Link to="/wishlist">Wishlist Ledger</Link><Link to="/departures">Past Departures</Link>{auth.currentUser && <button onClick={() => signOut(auth)} style={{ background: 'none', border: 'none', font: 'inherit', cursor: 'pointer', padding: 0, color: 'inherit', textDecoration: 'none', whiteSpace: 'nowrap' }}>Log Out</button>}</footer>
@@ -1296,6 +1343,9 @@ export default function App() {
   const [loading, setLoading] = React.useState(true);
   const [books, setBooks] = React.useState([]);
 
+  const [challengeGoal, setChallengeGoal] = React.useState(20);
+  const [challengeGoalLoading, setChallengeGoalLoading] = React.useState(true);
+
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -1303,6 +1353,22 @@ export default function App() {
     });
     return unsubscribe;
   }, []);
+
+  React.useEffect(() => {
+    if (!user) return;
+    const unsub = onSnapshot(doc(db, 'settings', 'challenge'), (docSnap) => {
+      if (docSnap.exists()) {
+        setChallengeGoal(docSnap.data().goal || 20);
+      } else {
+        setChallengeGoal(20);
+      }
+      setChallengeGoalLoading(false);
+    }, (err) => {
+      console.error("Error fetching challenge details:", err);
+      setChallengeGoalLoading(false);
+    });
+    return unsub;
+  }, [user]);
 
   React.useEffect(() => {
     if (!user) return;
@@ -1331,7 +1397,7 @@ export default function App() {
   });
   const recent = [...books].sort((a,b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0)).slice(0, 5);
   
-  const libraryData = { stacks, archives, departures, queue, recent, allBooks: books };
+  const libraryData = { stacks, archives, departures, queue, recent, allBooks: books, challengeGoal, challengeGoalLoading };
 
   return (
     <BookContext.Provider value={libraryData}>
@@ -1351,10 +1417,179 @@ export default function App() {
           <Route path="/insights" element={<InsightsPage />} />
           <Route path="/commonplace" element={<CommonplacePage />} />
           <Route path="/wishlist" element={<WishlistPage />} />
+          <Route path="/challenge" element={<ChallengePage />} />
         </Routes>
       </BrowserRouter>
     </BookContext.Provider>
   ); 
+}
+
+function ChallengePage() {
+  const navigate = useNavigate();
+  const { allBooks, challengeGoal } = useLibrary();
+  const [editing, setEditing] = React.useState(false);
+  const [newGoal, setNewGoal] = React.useState(challengeGoal);
+
+  React.useEffect(() => {
+    setNewGoal(challengeGoal);
+  }, [challengeGoal]);
+
+  const currentYear = new Date().getFullYear();
+
+  // Books finished in the current calendar year
+  const completedThisYear = allBooks.filter(b => {
+    if (!b.finishedAt) return false;
+    const finishYear = new Date(b.finishedAt).getFullYear();
+    return finishYear === currentYear;
+  }).sort((a, b) => new Date(b.finishedAt) - new Date(a.finishedAt));
+
+  // Sum total pages of completed books
+  const totalPagesRead = completedThisYear.reduce((sum, b) => {
+    const pages = parseInt(b.totalPages, 10);
+    return isNaN(pages) ? sum : sum + pages;
+  }, 0);
+
+  const completedCount = completedThisYear.length;
+  const pct = challengeGoal > 0 ? Math.min(100, Math.round((completedCount / challengeGoal) * 100)) : 0;
+
+  const handleSaveGoal = async (e) => {
+    e.preventDefault();
+    const parsed = parseInt(newGoal, 10);
+    if (isNaN(parsed) || parsed <= 0) return alert("Please enter a valid goal.");
+    try {
+      await setDoc(doc(db, 'settings', 'challenge'), { goal: parsed, year: currentYear }, { merge: true });
+      setEditing(false);
+    } catch (err) {
+      alert("Error saving goal: " + err.message);
+    }
+  };
+
+  // SVG circular ring properties
+  const radius = 64;
+  const stroke = 8;
+  const normalizedRadius = radius - stroke;
+  const circumference = normalizedRadius * 2 * Math.PI;
+  const strokeDashoffset = circumference - (pct / 100) * circumference;
+
+  return (
+    <Shell>
+      <div className="pageView">
+        <button type="button" className="backLink" onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'var(--blue)' }}>← Back</button>
+        
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px', marginBottom: '10px' }}>
+          <h2 className="pageTitle" style={{ margin: 0 }}>The Scriptorium Challenge</h2>
+          <div className="studyKicker" style={{ fontSize: '13px', margin: 0 }}>{currentYear} Reading Year</div>
+        </div>
+        <p className="pageSubtitle">Track your reading milestones, pages accumulated, and finished works.</p>
+        
+        <div className="ledgerGrid" style={{ gridTemplateColumns: '1fr 1.5fr', gap: '20px', marginTop: '20px' }}>
+          
+          {/* Progress Overview Panel */}
+          <section className="ledgerPanel" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px 20px', minHeight: 'auto' }}>
+            <div style={{ position: 'relative', width: `${radius * 2}px`, height: `${radius * 2}px` }}>
+              <svg height={radius * 2} width={radius * 2} style={{ transform: 'rotate(-90deg)', overflow: 'visible' }}>
+                <circle
+                  stroke="var(--line)"
+                  fill="transparent"
+                  strokeWidth={stroke}
+                  r={normalizedRadius}
+                  cx={radius}
+                  cy={radius}
+                />
+                <circle
+                  stroke="var(--blue)"
+                  fill="transparent"
+                  strokeWidth={stroke}
+                  strokeDasharray={circumference + ' ' + circumference}
+                  style={{ strokeDashoffset, transition: 'stroke-dashoffset 0.35s' }}
+                  strokeLinecap="round"
+                  r={normalizedRadius}
+                  cx={radius}
+                  cy={radius}
+                />
+              </svg>
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontFamily: 'Cormorant Garamond, serif'
+              }}>
+                <span style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--blue)', lineHeight: 1 }}>{pct}%</span>
+                <span style={{ fontSize: '10px', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '2px' }}>Complete</span>
+              </div>
+            </div>
+
+            <div style={{ textAlign: 'center', marginTop: '24px', width: '100%' }}>
+              <div style={{ fontSize: '18px', fontFamily: 'Cormorant Garamond, serif', color: 'var(--ink)' }}>
+                Completed <strong>{completedCount}</strong> of <strong>{challengeGoal}</strong> volumes
+              </div>
+              <div style={{ fontSize: '14px', color: 'var(--muted)', marginTop: '6px' }}>
+                Accumulated <strong>{totalPagesRead.toLocaleString()}</strong> pages read
+              </div>
+              
+              <div style={{ marginTop: '20px' }}>
+                {editing ? (
+                  <form onSubmit={handleSaveGoal} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                    <input 
+                      type="number" 
+                      value={newGoal} 
+                      onChange={e => setNewGoal(e.target.value)} 
+                      min="1" 
+                      required 
+                      style={{ width: '70px', height: '28px', padding: '2px 8px', fontSize: '12px', border: '1px solid var(--line)', borderRadius: '4px', background: 'var(--cream)', color: 'var(--ink)', outline: 'none' }} 
+                      autoFocus
+                    />
+                    <button type="submit" className="primaryBtn" style={{ padding: '0 10px', height: '28px', fontSize: '11px', display: 'inline-flex', alignItems: 'center' }}>Save</button>
+                    <button type="button" onClick={() => { setEditing(false); setNewGoal(challengeGoal); }} className="primaryBtn" style={{ padding: '0 10px', height: '28px', fontSize: '11px', background: 'transparent', color: 'var(--muted)', border: '1px solid var(--line)', display: 'inline-flex', alignItems: 'center' }}>Cancel</button>
+                  </form>
+                ) : (
+                  <button 
+                    onClick={() => setEditing(true)} 
+                    style={{ background: 'transparent', border: 'none', color: 'var(--blue)', fontSize: '12px', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit', fontWeight: 'bold' }}
+                  >
+                    ✏️ Change Annual Goal
+                  </button>
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* Ledger of Completed books this year */}
+          <section className="ledgerPanel" style={{ minHeight: 'auto' }}>
+            <h3 style={{ margin: '0 0 16px 0', fontSize: '24px', fontFamily: 'Cormorant Garamond, serif' }}>Volumes Completed ({completedCount})</h3>
+            {completedCount === 0 ? (
+              <p className="pageSubtitle" style={{ margin: 0, fontStyle: 'italic' }}>No books completed in {currentYear} yet. Keep reading!</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '420px', overflowY: 'auto', paddingRight: '4px' }}>
+                {completedThisYear.map(b => (
+                  <div key={b.id} className="bookCard" style={{ margin: 0 }}>
+                    <BookCover label="Finished" coverUrl={b.coverUrl} small />
+                    <div>
+                      <h4 style={{ margin: '0 0 2px 0' }}>
+                        <Link to={`/book/${encodeURIComponent(b.title)}`} style={{ textDecoration: 'underline', color: 'inherit' }}>{b.title}</Link>
+                      </h4>
+                      <p style={{ margin: 0, color: 'var(--muted)' }}>by {b.author}</p>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px', color: 'var(--muted)', marginTop: '8px' }}>
+                        <span>Completed: {new Date(b.finishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}</span>
+                        <span>{b.totalPages ? `${b.totalPages} pages` : 'No page count'}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+        </div>
+      </div>
+    </Shell>
+  );
 }
 
 
