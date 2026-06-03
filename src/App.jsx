@@ -1462,6 +1462,14 @@ function Login() {
   );
 }
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
+
 export default function App() { 
   const [user, setUser] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
@@ -1526,6 +1534,7 @@ export default function App() {
   return (
     <BookContext.Provider value={libraryData}>
       <BrowserRouter>
+        <ScrollToTop />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/stacks" element={<StacksPage />} />
