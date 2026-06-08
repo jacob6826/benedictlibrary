@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { doc, getDoc, setDoc, addDoc, collection, deleteDoc } from 'firebase/firestore';
@@ -58,15 +58,36 @@ export default function BookForm() {
   // Barcode scanner states
   const [scanning, setScanning] = useState(false);
   const [scanner, setScanner] = useState(null);
+  const scannerRef = useRef(null);
+
+  // Sync scanner reference
+  useEffect(() => {
+    scannerRef.current = scanner;
+  }, [scanner]);
 
   // Clean up scanner camera stream on component unmount
   useEffect(() => {
     return () => {
-      if (scanner) {
-        scanner.stop().catch(err => console.error("Error stopping scanner on unmount:", err));
+      if (scannerRef.current) {
+        const s = scannerRef.current;
+        try {
+          let shouldStop = true;
+          if (typeof s.getState === 'function') {
+            const state = s.getState();
+            // Html5QrcodeScannerState: 2 is SCANNING, 3 is PAUSED
+            if (state !== 2 && state !== 3) {
+              shouldStop = false;
+            }
+          }
+          if (shouldStop) {
+            s.stop().catch(err => console.error("Error stopping scanner on unmount (promise):", err));
+          }
+        } catch (err) {
+          console.error("Error stopping scanner on unmount (sync):", err);
+        }
       }
     };
-  }, [scanner]);
+  }, []);
 
   const startScanner = () => {
     setScanning(true);
@@ -98,13 +119,32 @@ export default function BookForm() {
 
   const stopScanner = () => {
     if (scanner) {
-      scanner.stop().then(() => {
+      try {
+        let shouldStop = true;
+        if (typeof scanner.getState === 'function') {
+          const state = scanner.getState();
+          if (state !== 2 && state !== 3) {
+            shouldStop = false;
+          }
+        }
+        if (shouldStop) {
+          scanner.stop().then(() => {
+            setScanner(null);
+            setScanning(false);
+          }).catch(err => {
+            console.error("Failed to stop scanner cleanly:", err);
+            setScanning(false);
+            setScanner(null);
+          });
+        } else {
+          setScanner(null);
+          setScanning(false);
+        }
+      } catch (err) {
+        console.error("Failed to stop scanner cleanly (sync):", err);
+        setScanning(false);
         setScanner(null);
-        setScanning(false);
-      }).catch(err => {
-        console.error("Failed to stop scanner cleanly:", err);
-        setScanning(false);
-      });
+      }
     } else {
       setScanning(false);
     }
@@ -117,9 +157,18 @@ export default function BookForm() {
     // Stop the scanner stream immediately to prevent duplicate runs
     if (qrScannerInstance) {
       try {
-        await qrScannerInstance.stop();
+        let shouldStop = true;
+        if (typeof qrScannerInstance.getState === 'function') {
+          const state = qrScannerInstance.getState();
+          if (state !== 2 && state !== 3) {
+            shouldStop = false;
+          }
+        }
+        if (shouldStop) {
+          await qrScannerInstance.stop();
+        }
       } catch (e) {
-        console.error(e);
+        console.error("Error stopping scanner in handleBarcodeDecoded:", e);
       }
     }
     setScanning(false);
