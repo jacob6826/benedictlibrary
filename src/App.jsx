@@ -8,7 +8,7 @@ if (localStorage.getItem('theme') === 'dark') {
 }
 
 import { auth, db } from './firebase'
-import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth'
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword } from 'firebase/auth'
 import { collection, onSnapshot, query, writeBatch, doc, updateDoc, setDoc } from 'firebase/firestore'
 import BookForm from './BookForm'
 import GoodreadsImporter from './GoodreadsImporter'
@@ -1469,34 +1469,111 @@ function WishlistPage() {
 }
 
 function Login() {
+  const [isRegister, setIsRegister] = React.useState(false);
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [confirmPassword, setConfirmPassword] = React.useState('');
   const [error, setError] = React.useState('');
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+
+    if (isRegister && password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      if (isRegister) {
+        await createUserWithEmailAndPassword(auth, email, password);
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
+      }
     } catch (err) {
-      setError(err.message);
+      let friendlyMessage = err.message;
+      if (err.code === 'auth/weak-password') {
+        friendlyMessage = 'Password should be at least 6 characters.';
+      } else if (err.code === 'auth/email-already-in-use') {
+        friendlyMessage = 'This email is already registered.';
+      } else if (err.code === 'auth/invalid-email') {
+        friendlyMessage = 'Invalid email address.';
+      } else if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+        friendlyMessage = 'Incorrect email or password.';
+      }
+      setError(friendlyMessage);
     }
   };
 
   return (
     <Shell>
       <div className="pageView">
-        <h2 className="pageTitle" style={{ textAlign: 'center' }}>Librarian Access</h2>
+        <h2 className="pageTitle" style={{ textAlign: 'center' }}>
+          {isRegister ? 'Register Librarian Account' : 'Librarian Access'}
+        </h2>
         <div className="panel" style={{ maxWidth: '360px', margin: '40px auto', padding: '30px' }}>
-          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-            {error && <p style={{ color: 'red', fontSize: '13px', margin: '0' }}>{error}</p>}
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            {error && <p style={{ color: '#d9534f', fontSize: '13px', margin: '0', textAlign: 'center', fontWeight: '500' }}>{error}</p>}
             <div className="searchBar" style={{ margin: 0 }}>
-              <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
+              <input 
+                type="email" 
+                placeholder="Email Address" 
+                value={email} 
+                onChange={e => setEmail(e.target.value)} 
+                required 
+              />
             </div>
             <div className="searchBar" style={{ margin: 0 }}>
-              <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
+              <input 
+                type="password" 
+                placeholder="Password" 
+                value={password} 
+                onChange={e => setPassword(e.target.value)} 
+                required 
+              />
             </div>
-            <button type="submit" className="primaryBtn" style={{ marginTop: '5px', cursor: 'pointer' }}>Log In</button>
+            {isRegister && (
+              <div className="searchBar" style={{ margin: 0 }}>
+                <input 
+                  type="password" 
+                  placeholder="Confirm Password" 
+                  value={confirmPassword} 
+                  onChange={e => setConfirmPassword(e.target.value)} 
+                  required 
+                />
+              </div>
+            )}
+            <button type="submit" className="primaryBtn" style={{ marginTop: '5px', cursor: 'pointer' }}>
+              {isRegister ? 'Register' : 'Log In'}
+            </button>
           </form>
+          <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '14px', borderTop: '1px dashed var(--line)', paddingTop: '15px' }}>
+            <span style={{ color: 'var(--muted)' }}>
+              {isRegister ? 'Already have an account? ' : 'First time here? '}
+            </span>
+            <button 
+              type="button"
+              onClick={() => {
+                setIsRegister(!isRegister);
+                setError('');
+                setEmail('');
+                setPassword('');
+                setConfirmPassword('');
+              }}
+              style={{ 
+                background: 'none', 
+                border: 'none', 
+                color: 'var(--blue)', 
+                textDecoration: 'underline', 
+                cursor: 'pointer', 
+                fontFamily: 'inherit',
+                fontWeight: 'bold',
+                padding: 0
+              }}
+            >
+              {isRegister ? 'Log In' : 'Create Account'}
+            </button>
+          </div>
         </div>
       </div>
     </Shell>
